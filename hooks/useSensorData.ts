@@ -8,6 +8,7 @@ import {
   GyroscopeMeasurement,
 } from "expo-sensors";
 import { useStore } from "@/stores/stores";
+import { mat4, vec3 } from "gl-matrix";
 
 export function useSensorData() {
   const { commonStore } = useStore();
@@ -20,37 +21,29 @@ export function useSensorData() {
   const calculateZAccelWorld = (data: DeviceMotionMeasurement | null) => {
     if (!data || !data.acceleration || !data.rotation) return 0;
     const { x: ax, y: ay, z: az } = data.acceleration;
-    const { alpha, beta, gamma } = data.rotation; // Expo orientation
+    const { alpha, beta, gamma } = data.rotation;
 
     // Convert degrees to radians
     const radAlpha = (alpha * Math.PI) / 180; // Z-axis (Yaw)
     const radBeta = (beta * Math.PI) / 180; // X-axis (Pitch)
     const radGamma = (gamma * Math.PI) / 180; // Y-axis (Roll)
 
-    // Compute sin/cos values for efficiency
-    const cA = Math.cos(radAlpha),
-      sA = Math.sin(radAlpha);
-    const cB = Math.cos(radBeta),
-      sB = Math.sin(radBeta);
-    const cG = Math.cos(radGamma),
-      sG = Math.sin(radGamma);
+    // Create a 4x4 rotation matrix
+    const R = mat4.create();
+    mat4.identity(R);
+    mat4.rotateZ(R, R, radAlpha);
+    mat4.rotateX(R, R, radBeta);
+    mat4.rotateY(R, R, radGamma);
 
-    // Rotation matrix (XYZ order)
-    const R = [
-      [cA * cG - sA * sB * sG, -cB * sG, sA * cG + cA * sB * sG],
-      [cA * sG + sA * sB * cG, cB * cG, sA * sG - cA * sB * cG],
-      [-sA * cB, sB, cA * cB],
-    ];
+    // Acceleration vector (device frame)
+    const accelDevice = vec3.fromValues(ax, ay, az);
+    const accelWorld = vec3.create();
 
-    // Transform acceleration into world coordinates
-    const accelWorld = {
-      x: R[0][0] * ax + R[0][1] * ay + R[0][2] * az,
-      y: R[1][0] * ax + R[1][1] * ay + R[1][2] * az,
-      z: R[2][0] * ax + R[2][1] * ay + R[2][2] * az, // Corrected world Z acceleration
-    };
+    // Transform acceleration vector to world coordinates
+    vec3.transformMat4(accelWorld, accelDevice, R);
 
-    // Extract the world Z-axis acceleration
-    setZAccelWorld(accelWorld.z);
+    // Extract Z acceleration (Earth frame)
+    setZAccelWorld(accelWorld[2]); // Get the Z component
   };
 
   useEffect(() => {
