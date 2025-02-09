@@ -32,10 +32,14 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "permissions": [
+      "android.permission.HIGH_SAMPLING_RATE_SENSORS"
+    ]
   }
 }
