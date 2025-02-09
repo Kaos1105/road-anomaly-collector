@@ -1,17 +1,17 @@
-import { StyleSheet, TouchableOpacity, Switch } from "react-native";
+import { StyleSheet, TouchableOpacity } from "react-native";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { observer } from "mobx-react";
 import { useStore } from "@/stores/stores";
 import { useSQLRecord } from "@/hooks/useSQLRecord";
-import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import { useEffect } from "react";
+import { useSensorData } from "@/hooks/useSensorData";
 
 const HomeScreen = observer(() => {
   const { commonStore } = useStore();
   const { markLast5Seconds } = useSQLRecord();
-  const { gyroMag, accelMag } = useAnomalyCollect();
+  const { zAccelWorld } = useSensorData();
 
   useEffect(() => {
     console.log(commonStore.isLogging);
@@ -24,11 +24,14 @@ const HomeScreen = observer(() => {
 
       {/* Display Sensor Values */}
       <ThemedView style={{ marginTop: 20, alignItems: "center" }}>
+        {/*<ThemedText style={{ fontSize: 16 }}>*/}
+        {/*  Gyro Magnitude: {gyroMag.toFixed(3)}*/}
+        {/*</ThemedText>*/}
+        {/*<ThemedText style={{ fontSize: 16 }}>*/}
+        {/*  Accel Magnitude: {accelMag.toFixed(3)}*/}
+        {/*</ThemedText>*/}
         <ThemedText style={{ fontSize: 16 }}>
-          Gyro Magnitude: {gyroMag.toFixed(3)}
-        </ThemedText>
-        <ThemedText style={{ fontSize: 16 }}>
-          Accel Magnitude: {accelMag.toFixed(3)}
+          Z Acceleration: {zAccelWorld.toFixed(3)}
         </ThemedText>
       </ThemedView>
 
