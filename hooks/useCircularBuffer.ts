@@ -3,9 +3,6 @@ import { useLocation } from "@/hooks/useLocation";
 import { SensorData } from "@/types/common/sensor";
 import { useStore } from "@/stores/stores";
 import { useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useSQLRecord } from "@/hooks/useSQLRecord";
-import { useSound } from "@/hooks/useSound";
 
 class CircularBuffer<T> {
   private buffer: (T | null)[];
@@ -41,38 +38,32 @@ class CircularBuffer<T> {
   }
 }
 
-// Buffer settings (30s window = 150 samples, 1s overlap = 5 samples)
-const WINDOW_SIZE = 200;
-const OVERLAP_SIZE = 100;
+// Buffer settings (10s window = 500 samples, 1s overlap = 50 samples at 50hz)
+const WINDOW_SIZE = 500;
+const OVERLAP_SIZE = 50;
 
 export function useCircularBuffer<T>() {
-  const { gyroData, accelData, gyroMag, accelMag } = useSensorData();
+  const { gyroData, accelData, getMagnitudeData } = useSensorData();
   const { getLocation } = useLocation();
-  const { commonStore } = useStore();
-
   const buffer = new CircularBuffer<SensorData>(WINDOW_SIZE, OVERLAP_SIZE);
 
-  // Check if an anomaly is detected
-  useEffect(() => {
-    (async () => {
-      if (!commonStore.isLogging || !gyroData || !accelData) return;
-      const now = new Date();
-      const timestamp = now.toISOString();
-      const readableTime = now.toLocaleString("en-GB", { timeZone: "UTC" }); // Convert to human-readable format
-      const loc = await getLocation();
+  const getSensorData = async (): Promise<SensorData> => {
+    const now = new Date();
+    const timestamp = now.toISOString();
+    const readableTime = now.toLocaleString("en-GB", { timeZone: "UTC" }); // Convert to human-readable format
+    const loc = await getLocation();
 
-      // Store data in the circular buffer
-      buffer.add({
-        timestamp,
-        recordDateTime: readableTime,
-        latitude: loc?.latitude || 0,
-        longitude: loc?.longitude || 0,
-        gyroMag: gyroMag(gyroData),
-        accelMag: accelMag(accelData),
-        markAnomaly: 0,
-      });
-    })();
-  }, [gyroData, accelData, commonStore.isLogging]);
+    // Store data in the circular buffer
+    return {
+      timestamp,
+      recordDateTime: readableTime,
+      latitude: loc?.latitude || 0,
+      longitude: loc?.longitude || 0,
+      gyroMag: getMagnitudeData(gyroData),
+      accelMag: getMagnitudeData(accelData),
+      markAnomaly: 0,
+    };
+  };
 
-  return { buffer };
+  return { buffer, getSensorData };
 }

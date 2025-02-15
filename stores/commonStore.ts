@@ -2,8 +2,8 @@ import { makeAutoObservable, runInAction } from "mobx";
 import RootStores from "@/stores/stores";
 
 // Thresholds for anomaly detection
-const ACCEL_THRESHOLD = 2.0; // Adjust based on testing
-const GYRO_THRESHOLD = 2.0; // Adjust based on testing
+const ACCEL_THRESHOLD = 20.0; // 5cm pothole Adjust based on testing
+const GYRO_THRESHOLD = 20.0; // 5cm pothole Adjust based on testing
 export default class CommonStore {
   rootStore: RootStores;
 
