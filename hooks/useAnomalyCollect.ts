@@ -2,19 +2,35 @@ import { useStore } from "@/stores/stores";
 import { useSQLRecord } from "@/hooks/useSQLRecord";
 import { useSound } from "@/hooks/useSound";
 import { useSensorData } from "@/hooks/useSensorData";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { SensorData } from "@/types/common/sensor";
 import { useLocation } from "@/hooks/useLocation";
-import { useCircularBuffer } from "@/hooks/useCircularBuffer";
 
 export function useAnomalyCollect() {
   const { commonStore } = useStore();
   const { saveToDatabase } = useSQLRecord();
   const { playBeep } = useSound();
   const { gyroData, accelData, getMagnitudeData } = useSensorData();
-  const prevDataRef = useRef<SensorData | null>(null);
+
   const { getLocation } = useLocation();
-  const { buffer, getSensorData } = useCircularBuffer();
+
+  const getSensorData = async (): Promise<SensorData> => {
+    const now = new Date();
+    const timestamp = now.toISOString();
+    const readableTime = now.toLocaleString("en-GB", { timeZone: "UTC" }); // Convert to human-readable format
+    const loc = await getLocation();
+
+    // Store data in the circular buffer
+    return {
+      timestamp,
+      recordDateTime: readableTime,
+      latitude: loc?.latitude || 0,
+      longitude: loc?.longitude || 0,
+      gyroMag: getMagnitudeData(gyroData),
+      accelMag: getMagnitudeData(accelData),
+      markAnomaly: 0,
+    };
+  };
 
   const recordAnomaly = async () => {
     if (!commonStore.isLogging) return;
@@ -27,36 +43,27 @@ export function useAnomalyCollect() {
   useEffect(() => {
     (async () => {
       if (!commonStore.isLogging || !gyroData || !accelData) return;
-
       const currentSensorData = await getSensorData();
 
       // Check rate of change (if prevData exists)
-      if (prevDataRef.current) {
-        const deltaGyro = Math.abs(
-          currentSensorData.gyroMag - prevDataRef.current.gyroMag,
-        );
-        const deltaAccel = Math.abs(
-          currentSensorData.accelMag - prevDataRef.current.accelMag,
-        );
-
-        if (
-          deltaGyro > commonStore.gyroThreshold ||
-          deltaAccel > commonStore.accelThreshold
-        ) {
-          await recordAnomaly();
-        }
+      if (
+        currentSensorData.gyroMag > commonStore.gyroThreshold &&
+        currentSensorData.accelMag > commonStore.accelThreshold
+      ) {
+        // await recordAnomaly();
       }
-      // Update previous data reference
-      prevDataRef.current = {
-        ...currentSensorData,
-      };
       // Store data in circular buffer
-      buffer.add(prevDataRef.current);
+      commonStore.setBufferData(currentSensorData);
     })();
   }, [gyroData, accelData, commonStore.isLogging]);
+
+  const getAccelMag = () => {
+    return commonStore.buffer.getData().map((x) => x.accelMag);
+  };
 
   return {
     gyroMag: gyroData ? getMagnitudeData(gyroData) : 0,
     accelMag: accelData ? getMagnitudeData(accelData) : 0,
+    getAccelMag,
   };
 }

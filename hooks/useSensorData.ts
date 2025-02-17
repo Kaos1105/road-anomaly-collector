@@ -23,7 +23,9 @@ export function useSensorData() {
     Accelerometer.setUpdateInterval(20);
 
     const gyroSub = Gyroscope.addListener((data) => setGyroData(data));
-    const accelSub = Accelerometer.addListener((data) => setAccelData(data));
+    const accelSub = Accelerometer.addListener((data) => {
+      setAccelData(data);
+    });
 
     return () => {
       gyroSub.remove();
@@ -35,7 +37,6 @@ export function useSensorData() {
     data: GyroscopeMeasurement | AccelerometerMeasurement | null,
   ) => {
     if (!data) return 0;
-    Math.sqrt(data.x ** 2 + data.y ** 2 + data.z ** 2);
     return Math.sqrt(data.x ** 2 + data.y ** 2 + data.z ** 2);
   };
 

@@ -1,10 +1,4 @@
-import { useSensorData } from "@/hooks/useSensorData";
-import { useLocation } from "@/hooks/useLocation";
-import { SensorData } from "@/types/common/sensor";
-import { useStore } from "@/stores/stores";
-import { useEffect } from "react";
-
-class CircularBuffer<T> {
+export class CircularBuffer<T> {
   private buffer: (T | null)[];
   private index: number;
   private readonly overlapSize: number;
@@ -26,7 +20,6 @@ class CircularBuffer<T> {
       }
       this.index = this.overlapSize; // Continue filling after overlap
     }
-
     this.buffer[this.index] = data;
     this.index++;
   }
@@ -36,34 +29,4 @@ class CircularBuffer<T> {
       .slice(0, this.index)
       .filter((item): item is T => item !== null);
   }
-}
-
-// Buffer settings (10s window = 500 samples, 1s overlap = 50 samples at 50hz)
-const WINDOW_SIZE = 500;
-const OVERLAP_SIZE = 50;
-
-export function useCircularBuffer<T>() {
-  const { gyroData, accelData, getMagnitudeData } = useSensorData();
-  const { getLocation } = useLocation();
-  const buffer = new CircularBuffer<SensorData>(WINDOW_SIZE, OVERLAP_SIZE);
-
-  const getSensorData = async (): Promise<SensorData> => {
-    const now = new Date();
-    const timestamp = now.toISOString();
-    const readableTime = now.toLocaleString("en-GB", { timeZone: "UTC" }); // Convert to human-readable format
-    const loc = await getLocation();
-
-    // Store data in the circular buffer
-    return {
-      timestamp,
-      recordDateTime: readableTime,
-      latitude: loc?.latitude || 0,
-      longitude: loc?.longitude || 0,
-      gyroMag: getMagnitudeData(gyroData),
-      accelMag: getMagnitudeData(accelData),
-      markAnomaly: 0,
-    };
-  };
-
-  return { buffer, getSensorData };
 }

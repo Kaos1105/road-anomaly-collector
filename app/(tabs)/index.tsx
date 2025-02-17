@@ -4,7 +4,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { observer } from "mobx-react";
 import { useStore } from "@/stores/stores";
 import { useSQLRecord } from "@/hooks/useSQLRecord";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
@@ -18,18 +18,36 @@ const HomeScreen = observer(() => {
 
   const [gyroData, setGyroData] = useState<number[]>([]);
   const [accelData, setAccelData] = useState<number[]>([]);
-  const [timestamps, setTimestamps] = useState<string[]>([]);
-  const maxDataPoints = 50; // Display last 50 readings
+  const maxDataPoints = 50; // Display last 200 readings
 
-  console.log(gyroData);
+  const gyroMagRef = useRef<number>(0); // Store the latest gyroMag value
+  const accelMagRef = useRef<number>(0); // Store the latest accelMag value
+
   useEffect(() => {
-    const now = new Date();
-    const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+    gyroMagRef.current = gyroMag;
+  }, [gyroMag]);
 
-    setGyroData((prev) => [...prev.slice(-maxDataPoints + 1), gyroMag]);
-    setAccelData((prev) => [...prev.slice(-maxDataPoints + 1), accelMag]);
-    setTimestamps((prev) => [...prev.slice(-maxDataPoints + 1), timeLabel]);
-  }, [gyroMag, accelMag]);
+  useEffect(() => {
+    accelMagRef.current = accelMag;
+  }, [accelMag]);
+
+  // Update accelData and gyroData every 500ms, only once during component mount
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setAccelData((prevAccelData) => {
+        const updatedAccelData = [...prevAccelData, accelMagRef.current];
+        return updatedAccelData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
+      });
+
+      setGyroData((prevGyroData) => {
+        const updatedGyroData = [...prevGyroData, gyroMagRef.current];
+        return updatedGyroData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
+      });
+    }, 100);
+
+    // Cleanup the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array, so it runs only once during mount
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center" }}>
@@ -38,58 +56,60 @@ const HomeScreen = observer(() => {
       >
         <ThemedText>Road Anomaly Data Collector</ThemedText>
 
-        {/* Display Sensor Values */}
+        {/* Display Sensor Values with Corresponding Colors */}
         <ThemedView style={{ marginTop: 20, alignItems: "center" }}>
-          <ThemedText style={{ fontSize: 16 }}>
+          <ThemedText style={{ fontSize: 16, color: "red" }}>
             Gyro Magnitude: {gyroMag.toFixed(3)}
           </ThemedText>
-          <ThemedText style={{ fontSize: 16 }}>
+          <ThemedText style={{ fontSize: 16, color: "green" }}>
             Accel Magnitude: {accelMag.toFixed(3)}
           </ThemedText>
         </ThemedView>
 
-        {/* Gyro and Accel Graph */}
+        {/* Merged Gyro and Accel Graph */}
         <ScrollView horizontal>
-          <LineChart
-            data={{
-              labels: ["January", "February", "March", "April", "May", "June"],
-              datasets: [
-                {
-                  data: [
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                    Math.random() * 100,
-                  ],
+          {commonStore.isLogging && (gyroData.length || accelData.length) ? (
+            <LineChart
+              data={{
+                labels: [], // No labels for the x-axis
+                datasets: [
+                  {
+                    data: accelData,
+                    color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`, // Green for accel data
+                    strokeWidth: 2,
+                  },
+                  {
+                    data: gyroData,
+                    color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`, // Red for gyro data
+                    strokeWidth: 2,
+                  },
+                ],
+              }}
+              width={screenWidth * 0.9}
+              height={220}
+              yAxisLabel="" // Hide y-axis label
+              yAxisSuffix="" // Hide y-axis suffix
+              chartConfig={{
+                backgroundColor: "#e26a00",
+                backgroundGradientFrom: "#fb8c00",
+                backgroundGradientTo: "#ffa726",
+                decimalPlaces: 2, // optional, defaults to 2dp
+                color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                strokeWidth: 2,
+                propsForDots: {
+                  r: "3",
+                  strokeWidth: "1",
+                  stroke: "#ffa726",
                 },
-              ],
-            }}
-            width={screenWidth * 0.9}
-            height={220}
-            yAxisLabel=""
-            yAxisSuffix=""
-            chartConfig={{
-              backgroundColor: "#e26a00",
-              backgroundGradientFrom: "#fb8c00",
-              backgroundGradientTo: "#ffa726",
-              decimalPlaces: 2, // optional, defaults to 2dp
-              color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              strokeWidth: 2,
-              propsForDots: {
-                r: "3",
-                strokeWidth: "1",
-                stroke: "#ffa726",
-              },
-            }}
-            bezier
-            style={{
-              marginVertical: 8,
-              borderRadius: 16,
-            }}
-          />
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+              }}
+            />
+          ) : null}
         </ScrollView>
 
         {/* Toggle Logging Checkbox */}

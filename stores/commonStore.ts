@@ -1,9 +1,16 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import RootStores from "@/stores/stores";
+import { SensorData } from "@/types/common/sensor";
+import { CircularBuffer } from "@/hooks/useCircularBuffer";
 
 // Thresholds for anomaly detection
-const ACCEL_THRESHOLD = 20.0; // 5cm pothole Adjust based on testing
-const GYRO_THRESHOLD = 20.0; // 5cm pothole Adjust based on testing
+const ACCEL_THRESHOLD = 1.5; // 5cm pothole Adjust based on testing
+const GYRO_THRESHOLD = 1.5; // 5cm pothole Adjust based on testing
+
+// Buffer settings (10s window = 500 samples, 1s overlap = 50 samples at 50hz)
+const WINDOW_SIZE = 500;
+const OVERLAP_SIZE = 50;
+
 export default class CommonStore {
   rootStore: RootStores;
 
@@ -11,6 +18,7 @@ export default class CommonStore {
   accelThreshold: number = ACCEL_THRESHOLD;
   gyroThreshold: number = GYRO_THRESHOLD;
   isLogging: boolean = false;
+  buffer = new CircularBuffer<SensorData>(WINDOW_SIZE, OVERLAP_SIZE);
 
   constructor(rootStore: RootStores) {
     this.rootStore = rootStore;
@@ -34,7 +42,6 @@ export default class CommonStore {
   }
 
   setIsLogging(isLogging: boolean) {
-    console.log(isLogging);
     runInAction(() => {
       this.isLogging = isLogging;
     });
@@ -42,5 +49,11 @@ export default class CommonStore {
 
   getIsLogging() {
     return this.isLogging;
+  }
+
+  setBufferData(data: SensorData) {
+    runInAction(() => {
+      this.buffer.add(data);
+    });
   }
 }

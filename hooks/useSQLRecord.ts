@@ -1,11 +1,10 @@
 import * as SQLite from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { useCircularBuffer } from "@/hooks/useCircularBuffer";
-import { SensorData } from "@/types/common/sensor";
 import { v4 as uuidv4 } from "uuid";
+import { useStore } from "@/stores/stores";
 
 export function useSQLRecord() {
-  const { buffer } = useCircularBuffer<SensorData>();
+  const { commonStore } = useStore();
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
   const [sensorData, setSensorData] = useState([]);
 
@@ -19,7 +18,7 @@ export function useSQLRecord() {
   const saveToDatabase = async () => {
     if (!db) return;
     const uuid = uuidv4();
-    const data = buffer.getData();
+    const data = commonStore.buffer.getData();
 
     try {
       for (const {
