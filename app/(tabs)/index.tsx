@@ -3,44 +3,44 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { observer } from "mobx-react";
 import { useStore } from "@/stores/stores";
-import { useSQLRecord } from "@/hooks/useSQLRecord";
 import { useEffect, useRef, useState } from "react";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
+import { SensorData } from "@/types/common/sensor";
 
 const screenWidth = Dimensions.get("window").width;
 
 const HomeScreen = observer(() => {
   const { commonStore } = useStore();
-  const { markLast5Seconds } = useSQLRecord();
-  const { gyroMag, accelMag } = useAnomalyCollect();
+  const { currentSensorData } = useAnomalyCollect();
 
   const [gyroData, setGyroData] = useState<number[]>([]);
   const [accelData, setAccelData] = useState<number[]>([]);
   const maxDataPoints = 50; // Display last 200 readings
 
-  const gyroMagRef = useRef<number>(0); // Store the latest gyroMag value
-  const accelMagRef = useRef<number>(0); // Store the latest accelMag value
+  const sensorDataRef = useRef<SensorData | null>(null);
 
   useEffect(() => {
-    gyroMagRef.current = gyroMag;
-  }, [gyroMag]);
-
-  useEffect(() => {
-    accelMagRef.current = accelMag;
-  }, [accelMag]);
+    sensorDataRef.current = currentSensorData;
+  }, [currentSensorData]);
 
   // Update accelData and gyroData every 500ms, only once during component mount
   useEffect(() => {
     const intervalId = setInterval(() => {
       setAccelData((prevAccelData) => {
-        const updatedAccelData = [...prevAccelData, accelMagRef.current];
+        const updatedAccelData = [
+          ...prevAccelData,
+          sensorDataRef.current?.accelMag ?? 0,
+        ];
         return updatedAccelData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
       });
 
       setGyroData((prevGyroData) => {
-        const updatedGyroData = [...prevGyroData, gyroMagRef.current];
+        const updatedGyroData = [
+          ...prevGyroData,
+          sensorDataRef.current?.gyroMag ?? 0,
+        ];
         return updatedGyroData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
       });
     }, 100);
@@ -59,10 +59,10 @@ const HomeScreen = observer(() => {
         {/* Display Sensor Values with Corresponding Colors */}
         <ThemedView style={{ marginTop: 20, alignItems: "center" }}>
           <ThemedText style={{ fontSize: 16, color: "red" }}>
-            Gyro Magnitude: {gyroMag.toFixed(3)}
+            Gyro Magnitude: {sensorDataRef.current?.gyroMag.toFixed(3)}
           </ThemedText>
           <ThemedText style={{ fontSize: 16, color: "green" }}>
-            Accel Magnitude: {accelMag.toFixed(3)}
+            Accel Magnitude: {sensorDataRef.current?.accelMag.toFixed(3)}
           </ThemedText>
         </ThemedView>
 
@@ -98,7 +98,7 @@ const HomeScreen = observer(() => {
                 labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
                 strokeWidth: 2,
                 propsForDots: {
-                  r: "3",
+                  r: "2",
                   strokeWidth: "1",
                   stroke: "#ffa726",
                 },
@@ -134,7 +134,7 @@ const HomeScreen = observer(() => {
 
         {/* Mark Anomalies Button */}
         <TouchableOpacity
-          onPress={markLast5Seconds}
+          // onPress={markLast5Seconds}
           style={styles.anomalyButton}
         >
           <ThemedText style={{ color: "white", fontWeight: "bold" }}>

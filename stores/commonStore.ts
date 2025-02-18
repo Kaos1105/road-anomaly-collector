@@ -56,4 +56,15 @@ export default class CommonStore {
       this.buffer.add(data);
     });
   }
+
+  extractAnomaly(anomalyTime: number) {
+    return this.buffer
+      .getBuffer()
+      .filter(
+        (entry) =>
+          entry &&
+          entry.timestamp >= anomalyTime - 1000 &&
+          entry.timestamp <= anomalyTime + 1000,
+      );
+  }
 }

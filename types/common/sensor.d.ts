@@ -1,6 +1,6 @@
 export type SensorData = {
   recordDateTime: string;
-  timestamp: string;
+  timestamp: number;
   gyroMag: number;
   accelMag: number;
   latitude: number | null;

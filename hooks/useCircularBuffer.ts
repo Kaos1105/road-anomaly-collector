@@ -27,9 +27,7 @@ export class CircularBuffer<T> {
     this.index++;
   }
 
-  public getData(): T[] {
-    return this.buffer
-      .slice(0, this.index)
-      .filter((item): item is T => item !== null);
+  getBuffer() {
+    return this.buffer;
   }
 }

@@ -13,6 +13,7 @@ export function useSensorData() {
   const [accelData, setAccelData] = useState<AccelerometerMeasurement | null>(
     null,
   );
+  const [timeStamp, setTimeStamp] = useState(0);
 
   useEffect(() => {
     if (!commonStore.isLogging) {
@@ -40,5 +41,9 @@ export function useSensorData() {
     return Math.sqrt(data.x ** 2 + data.y ** 2 + data.z ** 2);
   };
 
-  return { gyroData, accelData, getMagnitudeData };
+  return {
+    gyroData,
+    accelData,
+    getMagnitudeData,
+  };
 }
