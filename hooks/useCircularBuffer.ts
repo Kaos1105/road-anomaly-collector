@@ -7,6 +7,9 @@ export class CircularBuffer<T> {
     private readonly size: number,
     overlap: number,
   ) {
+    if (overlap >= size) {
+      throw new Error("Overlap size must be smaller than the buffer size.");
+    }
     this.buffer = new Array(size).fill(null);
     this.index = 0;
     this.overlapSize = overlap;
