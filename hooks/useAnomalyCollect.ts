@@ -66,24 +66,29 @@ export function useAnomalyCollect() {
 
   useEffect(() => {
     if (!commonStore.isLogging) return;
-    if (accelDataRef.current || gyroDataRef.current) {
-      currentSensorDataRef.current = getSensorData(
-        accelDataRef.current,
-        gyroDataRef.current,
-      );
-      console.log(
-        "currentSensorDataRef-timestamp",
-        currentSensorDataRef.current.timestamp,
-      );
-      if (
-        currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
-        currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
-      ) {
-        recordAnomaly(currentSensorDataRef.current.timestamp);
+    const interval = setInterval(async () => {
+      if (accelDataRef.current || gyroDataRef.current) {
+        currentSensorDataRef.current = getSensorData(
+          accelDataRef.current,
+          gyroDataRef.current,
+        );
+        console.log(
+          "currentSensorDataRef-timestamp",
+          currentSensorDataRef.current.timestamp,
+        );
+        if (
+          currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
+          currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
+        ) {
+          await recordAnomaly(currentSensorDataRef.current.timestamp);
+        }
+        commonStore.setBufferData(currentSensorDataRef.current);
       }
-      commonStore.setBufferData(currentSensorDataRef.current);
-    }
-  }, [accelDataRef.current?.timestamp]);
+    }, 20);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [commonStore.isLogging]);
 
   const getMagnitudeData = (
     data: GyroscopeMeasurement | AccelerometerMeasurement | null,
