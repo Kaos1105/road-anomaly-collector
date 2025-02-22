@@ -13,17 +13,11 @@ const screenWidth = Dimensions.get("window").width;
 
 const HomeScreen = observer(() => {
   const { commonStore } = useStore();
-  const { currentSensorData } = useAnomalyCollect();
+  const { currentSensorDataRef } = useAnomalyCollect();
 
   const [gyroData, setGyroData] = useState<number[]>([]);
   const [accelData, setAccelData] = useState<number[]>([]);
   const maxDataPoints = 50; // Display last 200 readings
-
-  const sensorDataRef = useRef<SensorData | null>(null);
-
-  useEffect(() => {
-    sensorDataRef.current = currentSensorData;
-  }, [currentSensorData]);
 
   // Update accelData and gyroData every 500ms, only once during component mount
   useEffect(() => {
@@ -31,7 +25,7 @@ const HomeScreen = observer(() => {
       setAccelData((prevAccelData) => {
         const updatedAccelData = [
           ...prevAccelData,
-          sensorDataRef.current?.accelMag ?? 0,
+          currentSensorDataRef.current?.accelMag ?? 0,
         ];
         return updatedAccelData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
       });
@@ -39,7 +33,7 @@ const HomeScreen = observer(() => {
       setGyroData((prevGyroData) => {
         const updatedGyroData = [
           ...prevGyroData,
-          sensorDataRef.current?.gyroMag ?? 0,
+          currentSensorDataRef.current?.gyroMag ?? 0,
         ];
         return updatedGyroData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
       });
@@ -59,10 +53,10 @@ const HomeScreen = observer(() => {
         {/* Display Sensor Values with Corresponding Colors */}
         <ThemedView style={{ marginTop: 20, alignItems: "center" }}>
           <ThemedText style={{ fontSize: 16, color: "red" }}>
-            Gyro Magnitude: {sensorDataRef.current?.gyroMag.toFixed(3)}
+            Gyro Magnitude: {currentSensorDataRef.current?.gyroMag.toFixed(3)}
           </ThemedText>
           <ThemedText style={{ fontSize: 16, color: "green" }}>
-            Accel Magnitude: {sensorDataRef.current?.accelMag.toFixed(3)}
+            Accel Magnitude: {currentSensorDataRef.current?.accelMag.toFixed(3)}
           </ThemedText>
         </ThemedView>
 
