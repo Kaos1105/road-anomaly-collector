@@ -54,28 +54,9 @@ export function useAnomalyCollect() {
       gyroDataRef.current = data;
     });
     const accelSub = Accelerometer.addListener((data) => {
-      console.log("timestamp", data.timestamp);
-      accelDataRef.current = data;
-    });
-
-    return () => {
-      gyroSub.remove();
-      accelSub.remove();
-    };
-  }, [commonStore.isLogging]);
-
-  useEffect(() => {
-    if (!commonStore.isLogging) return;
-    const interval = setInterval(() => {
-      if (accelDataRef.current || gyroDataRef.current) {
-        currentSensorDataRef.current = getSensorData(
-          accelDataRef.current,
-          gyroDataRef.current,
-        );
-        console.log(
-          "currentSensorDataRef-timestamp",
-          currentSensorDataRef.current.timestamp,
-        );
+      if (!commonStore.isLogging) return;
+      if (data || gyroDataRef.current) {
+        currentSensorDataRef.current = getSensorData(data, gyroDataRef.current);
         if (
           currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
           currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
@@ -84,9 +65,11 @@ export function useAnomalyCollect() {
         }
         commonStore.setBufferData(currentSensorDataRef.current);
       }
-    }, 20);
+    });
+
     return () => {
-      clearInterval(interval);
+      gyroSub.remove();
+      accelSub.remove();
     };
   }, [commonStore.isLogging]);
 

@@ -65,6 +65,7 @@ export default class CommonStore {
           entry &&
           entry.timestamp >= anomalyTime - 1000 &&
           entry.timestamp <= anomalyTime + 1000,
-      );
+      )
+      .sort((a, b) => a!.timestamp - b!.timestamp);
   }
 }

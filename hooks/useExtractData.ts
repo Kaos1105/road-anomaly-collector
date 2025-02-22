@@ -49,21 +49,25 @@ export function useExtractData() {
 
   const processAnomaly = () => {
     if (anomalyQueueRef.current.length === 0) return;
-    console.log(anomalyQueueRef.current.length);
     // Take the middle timestamp
     const middleIndex = Math.floor(anomalyQueueRef.current.length / 2);
     const anomalyTime = anomalyQueueRef.current[middleIndex];
+    // Clear the queue after processing
+    anomalyQueueRef.current = [];
 
+    setTimeout(() => {
+      extractAnomaly(anomalyTime);
+    }, 1000);
+  };
+
+  const extractAnomaly = (anomalyTime: number) => {
     // Extract data based on this timestamp
     const extractedData = commonStore.extractAnomaly(anomalyTime);
     console.log("Extracted Data for Anomaly:", extractedData);
 
     if (extractedData && extractedData.length > 0) {
-      // await saveCSV(extractedData, anomalyTime);
+      // saveCSV(extractedData, anomalyTime).then();
     }
-
-    // Clear the queue after processing
-    anomalyQueueRef.current = [];
   };
 
   const addAnomalyTimestamp = (timestamp: number) => {
@@ -74,7 +78,7 @@ export function useExtractData() {
     // Wait 200ms before processing anomalies
     timeoutRef.current = setTimeout(async () => {
       processAnomaly();
-    }, 200);
+    }, 100);
   };
 
   return { addAnomalyTimestamp };
