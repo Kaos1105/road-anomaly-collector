@@ -66,7 +66,7 @@ export function useAnomalyCollect() {
 
   useEffect(() => {
     if (!commonStore.isLogging) return;
-    const interval = setInterval(async () => {
+    const interval = setInterval(() => {
       if (accelDataRef.current || gyroDataRef.current) {
         currentSensorDataRef.current = getSensorData(
           accelDataRef.current,
@@ -80,7 +80,7 @@ export function useAnomalyCollect() {
           currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
           currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
         ) {
-          await recordAnomaly(currentSensorDataRef.current.timestamp);
+          recordAnomaly(currentSensorDataRef.current.timestamp);
         }
         commonStore.setBufferData(currentSensorDataRef.current);
       }
@@ -97,8 +97,8 @@ export function useAnomalyCollect() {
     return Math.sqrt(data.x ** 2 + data.y ** 2 + data.z ** 2);
   };
 
-  const recordAnomaly = async (anomalyTimestamp: number) => {
-    await playBeep(); // Play sound when anomaly is detected
+  const recordAnomaly = (anomalyTimestamp: number) => {
+    playBeep(); // Play sound when anomaly is detected
     // Push the anomaly timestamp to the queue
     addAnomalyTimestamp(anomalyTimestamp);
   };

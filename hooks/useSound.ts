@@ -18,11 +18,11 @@ export function useSound() {
     };
   }, []);
 
-  async function playBeep() {
+  const playBeep = () => {
     if (sound) {
-      await sound.replayAsync();
+      sound.playAsync().then();
     }
-  }
+  };
 
   return { playBeep };
 }
