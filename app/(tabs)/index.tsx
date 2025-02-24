@@ -1,4 +1,4 @@
-import { StyleSheet, ScrollView } from "react-native";
+import { StyleSheet, ScrollView, Dimensions } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { observer } from "mobx-react";
@@ -8,6 +8,7 @@ import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import SensorGraph from "@/modules/home/SensorGraph";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
+import LineChart from "react-native-chart-kit/dist/line-chart/LineChart";
 
 const HomeScreen = observer(() => {
   const { commonStore } = useStore();
@@ -75,7 +76,6 @@ const HomeScreen = observer(() => {
         {commonStore.isLogging && (gyroData.length || accelData.length) ? (
           <SensorGraph accelData={accelData} gyroData={gyroData} />
         ) : null}
-
         <LogCheckBox />
 
         <AnomalyBtnGroup />

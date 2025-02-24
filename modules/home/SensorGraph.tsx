@@ -31,9 +31,12 @@ const SensorGraph = ({ accelData, gyroData }: IProps) => {
         yAxisLabel="" // Hide y-axis label
         yAxisSuffix="" // Hide y-axis suffix
         chartConfig={{
-          backgroundColor: "#2a3d66",
-          backgroundGradientFrom: "#3b4f7a",
-          backgroundGradientTo: "#5c76a9",
+          backgroundColor: "#3b507a",
+          backgroundGradientFrom: "#4c6395",
+          backgroundGradientTo: "#6d88c0",
+          // backgroundColor: "#e26a00",
+          // backgroundGradientFrom: "#fb8c00",
+          // backgroundGradientTo: "#ffa726",
           decimalPlaces: 2, // optional, defaults to 2dp
           color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
           labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,

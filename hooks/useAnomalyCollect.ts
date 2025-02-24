@@ -10,6 +10,12 @@ import {
   GyroscopeMeasurement,
 } from "expo-sensors";
 import { SensorData } from "@/types/common/sensor";
+import {
+  accelerometer,
+  gyroscope,
+  setUpdateIntervalForType,
+  SensorTypes,
+} from "react-native-sensors";
 
 export function useAnomalyCollect() {
   const { commonStore } = useStore();
@@ -18,7 +24,7 @@ export function useAnomalyCollect() {
   const { addAnomalyTimestamp } = useExtractData();
 
   const gyroDataRef = useRef<GyroscopeMeasurement | null>(null);
-  const accelDataRef = useRef<AccelerometerMeasurement | null>(null);
+  // const accelDataRef = useRef<AccelerometerMeasurement | null>(null);
   const currentSensorDataRef = useRef<SensorData | null>(null);
 
   const getSensorData = (
@@ -45,18 +51,20 @@ export function useAnomalyCollect() {
     if (!commonStore.isLogging) {
       return;
     }
-    // Subscribe to sensors
-    Gyroscope.setUpdateInterval(20); // 50Hz (20ms per sample)
-    Accelerometer.setUpdateInterval(20);
 
-    const gyroSub = Gyroscope.addListener((data) => {
-      // console.log("gyro timestamp", data.timestamp);
-      gyroDataRef.current = data;
-    });
-    const accelSub = Accelerometer.addListener((data) => {
+    // Set update interval for sensors (20ms = 50Hz)
+    setUpdateIntervalForType(SensorTypes.accelerometer, 20);
+    setUpdateIntervalForType(SensorTypes.gyroscope, 20);
+
+    // Subscribe to accelerometer
+    const accelSubscription = accelerometer.subscribe((value) => {
       if (!commonStore.isLogging) return;
-      if (data || gyroDataRef.current) {
-        currentSensorDataRef.current = getSensorData(data, gyroDataRef.current);
+
+      if (value) {
+        currentSensorDataRef.current = getSensorData(
+          value,
+          gyroDataRef.current,
+        );
         if (
           currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
           currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
@@ -67,11 +75,53 @@ export function useAnomalyCollect() {
       }
     });
 
+    // Subscribe to gyroscope
+    const gyroSubscription = gyroscope.subscribe((value) => {
+      if (!commonStore.isLogging) return;
+      if (value) {
+        gyroDataRef.current = value;
+      }
+    });
+
+    // Cleanup function to unsubscribe
     return () => {
-      gyroSub.remove();
-      accelSub.remove();
+      accelSubscription.unsubscribe();
+      gyroSubscription.unsubscribe();
     };
-  }, [commonStore.isLogging]);
+  }, []);
+
+  //TODO: expo sensor
+  // useEffect(() => {
+  //   if (!commonStore.isLogging) {
+  //     return;
+  //   }
+  //   // Subscribe to sensors
+  //   Gyroscope.setUpdateInterval(20); // 50Hz (20ms per sample)
+  //   Accelerometer.setUpdateInterval(20);
+  //
+  //   const gyroSub = Gyroscope.addListener((data) => {
+  //     // console.log("gyro timestamp", data.timestamp);
+  //     gyroDataRef.current = data;
+  //   });
+  //   const accelSub = Accelerometer.addListener((data) => {
+  //     if (!commonStore.isLogging) return;
+  //     if (data || gyroDataRef.current) {
+  //       currentSensorDataRef.current = getSensorData(data, gyroDataRef.current);
+  //       if (
+  //         currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
+  //         currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
+  //       ) {
+  //         recordAnomaly(currentSensorDataRef.current.timestamp);
+  //       }
+  //       commonStore.setBufferData(currentSensorDataRef.current);
+  //     }
+  //   });
+  //
+  //   return () => {
+  //     gyroSub.remove();
+  //     accelSub.remove();
+  //   };
+  // }, [commonStore.isLogging]);
 
   const getMagnitudeData = (
     data: GyroscopeMeasurement | AccelerometerMeasurement | null,
