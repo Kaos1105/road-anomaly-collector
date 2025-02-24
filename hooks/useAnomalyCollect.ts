@@ -46,8 +46,8 @@ export function useAnomalyCollect() {
       return;
     }
     // Subscribe to sensors
-    Gyroscope.setUpdateInterval(20); // 50Hz (20ms per sample)
-    Accelerometer.setUpdateInterval(20);
+    Gyroscope.setUpdateInterval(5); // 5ms per sample
+    Accelerometer.setUpdateInterval(5);
 
     const gyroSub = Gyroscope.addListener((data) => {
       // console.log("gyro timestamp", data.timestamp);

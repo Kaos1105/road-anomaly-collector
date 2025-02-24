@@ -8,8 +8,8 @@ const ACCEL_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
 const GYRO_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
 
 // Buffer settings (10s window = 500 samples, 1s overlap = 50 samples at 50hz)
-const WINDOW_SIZE = 500;
-const OVERLAP_SIZE = 50;
+const WINDOW_SIZE = 1000;
+const OVERLAP_SIZE = 100;
 
 export default class CommonStore {
   rootStore: RootStores;
