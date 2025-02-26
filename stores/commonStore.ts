@@ -6,7 +6,7 @@ import { CircularBuffer } from "@/hooks/useCircularBuffer";
 // Thresholds for anomaly detection
 const ACCEL_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
 const GYRO_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
-
+const IS_AND_CONDITION = false;
 // Buffer settings (10s window = 500 samples, 1s overlap = 50 samples at 50hz)
 const WINDOW_SIZE = 1000;
 const OVERLAP_SIZE = 100;
@@ -18,6 +18,7 @@ export default class CommonStore {
   accelThreshold: number = ACCEL_THRESHOLD;
   gyroThreshold: number = GYRO_THRESHOLD;
   isLogging: boolean = false;
+  isAndCondition: boolean = IS_AND_CONDITION;
   buffer = new CircularBuffer<SensorData>(WINDOW_SIZE, OVERLAP_SIZE);
 
   constructor(rootStore: RootStores) {
@@ -39,6 +40,14 @@ export default class CommonStore {
 
   getGyroThreshold() {
     return this.gyroThreshold;
+  }
+
+  setIsAndCondition(isAndCondition: boolean) {
+    this.isAndCondition = isAndCondition;
+  }
+
+  getIsAndCondition() {
+    return this.isAndCondition;
   }
 
   setIsLogging(isLogging: boolean) {
