@@ -6,10 +6,7 @@ import { useStore } from "@/stores/stores";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
-import { useEffect, useRef, useState } from "react";
-import { set } from "mobx";
-
-const maxDataPoints = 50; // Limit data history
+import { useEffect, useState } from "react";
 
 const HomeScreen = observer(() => {
   const { commonStore } = useStore();
@@ -25,7 +22,7 @@ const HomeScreen = observer(() => {
       // Update refs (stores data without triggering re-renders)
       setAccelData(currentSensorDataRef.current?.accelMag ?? 0);
       setGyroData(currentSensorDataRef.current?.gyroMag ?? 0);
-    }, 1000); // Update UI every second
+    }, 200); // Update UI every second
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);

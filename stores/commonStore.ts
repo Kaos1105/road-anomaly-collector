@@ -23,7 +23,9 @@ export default class CommonStore {
 
   constructor(rootStore: RootStores) {
     this.rootStore = rootStore;
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      buffer: false,
+    });
   }
 
   setAccelThreshold(accelThreshold: number) {
@@ -77,13 +79,12 @@ export default class CommonStore {
   // }
 
   extractAnomaly(anomalyTime: number) {
-    return this.buffer
-      .getBuffer()
-      .filter(
-        (entry) =>
-          entry &&
-          entry.timestamp >= anomalyTime - 1000 &&
-          entry.timestamp <= anomalyTime + 1000,
-      );
+    const cloned = [...this.buffer.getBuffer()];
+    return cloned.filter(
+      (entry) =>
+        entry &&
+        entry.timestamp >= anomalyTime - 1000 &&
+        entry.timestamp <= anomalyTime + 1000,
+    );
   }
 }
