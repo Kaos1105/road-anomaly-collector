@@ -1,37 +1,77 @@
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { Button } from "@/components/button/Button";
+import { AnomalyType } from "@/hooks/useAnomalyCollect";
 
-const AnomalyBtnGroup = () => {
+type AnomalyBtnGroupProps = {
+  isBtnEnabled: boolean;
+  setAnomalyType: (anomalyTime: AnomalyType) => Promise<void>;
+};
+
+const AnomalyBtnGroup = ({
+  isBtnEnabled,
+  setAnomalyType,
+}: AnomalyBtnGroupProps) => {
+  const handlePress = async (type: AnomalyType) => {
+    await setAnomalyType(type);
+  };
+
   return (
     <>
       <ThemedView style={styles.anomalyBtnContainer}>
-        <TouchableOpacity
-          // onPress={markLast5Seconds}
+        <Button
+          disabled={!isBtnEnabled}
+          title={""}
+          onPress={async () => {
+            await handlePress("NOR");
+          }}
           style={{ ...styles.anomalyButton, backgroundColor: "#93bf9d" }}
         >
           <ThemedText style={styles.anomalyText}>Mark as Normal</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          // onPress={markLast5Seconds}
+        </Button>
+        <Button
+          disabled={!isBtnEnabled}
+          title={""}
+          onPress={async () => {
+            await handlePress("MANHOLE");
+          }}
+          style={{ ...styles.anomalyButton, backgroundColor: "#3b4f7a" }}
+        >
+          <ThemedText style={styles.anomalyText}>Mark as Manhole</ThemedText>
+        </Button>
+        <Button
+          disabled={!isBtnEnabled}
+          title={""}
+          onPress={async () => {
+            await handlePress("BUMP");
+          }}
           style={{ ...styles.anomalyButton, backgroundColor: "#c4c47e" }}
         >
           <ThemedText style={styles.anomalyText}>
             Mark as Speed Bumps
           </ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          // onPress={markLast5Seconds}
+        </Button>
+        <Button
+          disabled={!isBtnEnabled}
+          title={""}
+          onPress={async () => {
+            await handlePress("UNEVEN");
+          }}
           style={{ ...styles.anomalyButton, backgroundColor: "#cca164" }}
         >
           <ThemedText style={styles.anomalyText}>Mark as Uneven</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          // onPress={markLast5Seconds}
+        </Button>
+        <Button
+          disabled={!isBtnEnabled}
+          title={""}
+          onPress={async () => {
+            await handlePress("POTHOLE");
+          }}
           style={{ ...styles.anomalyButton, backgroundColor: "#e36459" }}
         >
           <ThemedText style={styles.anomalyText}>Mark as Potholes</ThemedText>
-        </TouchableOpacity>
+        </Button>
       </ThemedView>
     </>
   );

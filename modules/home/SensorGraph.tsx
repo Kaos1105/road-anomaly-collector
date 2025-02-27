@@ -1,5 +1,5 @@
+import { Dimensions, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
 
 const screenWidth = Dimensions.get("window").width;
 type IProps = {

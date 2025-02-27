@@ -1,51 +1,19 @@
-import { useEffect, useRef } from "react";
-import * as FileSystem from "expo-file-system";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/stores/stores";
+import { AnomalyType } from "@/hooks/useAnomalyCollect";
 import { SensorData } from "@/types/common/sensor";
 
-const saveCSV = async (data: Array<SensorData | null>, anomalyTime: number) => {
-  try {
-    const filePath = `${FileSystem.documentDirectory}${anomalyTime}_anomaly.csv`;
-    const header =
-      [
-        "timestamp",
-        "recordDateTime",
-        "latitude",
-        "longitude",
-        "gyroMag",
-        "accelMag",
-        "markAnomaly",
-      ].join(",") + "\n";
-
-    const rows = data
-      .map((item) =>
-        [
-          item?.timestamp ?? "",
-          item?.recordDateTime ?? "",
-          item?.latitude ?? "",
-          item?.longitude ?? "",
-          item?.gyroMag ?? "",
-          item?.accelMag ?? "",
-          item?.markAnomaly ?? "",
-        ].join(","),
-      )
-      .join("\n");
-
-    const csvContent = header + rows;
-    await FileSystem.writeAsStringAsync(filePath, csvContent, {
-      encoding: FileSystem.EncodingType.UTF8,
-    });
-
-    console.log(`CSV file saved successfully at: ${filePath}`);
-  } catch (error) {
-    console.error("Error saving data to CSV:", error);
-  }
+type ExtractedData = {
+  extractedData: (SensorData | null)[];
+  timestamp: number;
 };
 
 export function useExtractData() {
   const { commonStore } = useStore();
   const anomalyQueueRef = useRef<number[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const clearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const extractedAnomalyRef = useRef<ExtractedData[]>([]);
 
   const processAnomaly = () => {
     if (anomalyQueueRef.current.length === 0) return;
@@ -62,12 +30,24 @@ export function useExtractData() {
 
   const extractAnomaly = (anomalyTime: number) => {
     // Extract data based on this timestamp
-    const extractedData = commonStore.extractAnomaly(anomalyTime);
-    console.log("Extracted Data for Anomaly:", extractedData);
+    setTimeout(() => {
+      const extractedData = commonStore.extractAnomaly(anomalyTime);
+      console.log("Extracted Data for Anomaly:", extractedData.length);
+      if (extractedData && extractedData.length > 0) {
+        extractedAnomalyRef.current.push({
+          extractedData,
+          timestamp: anomalyTime,
+        });
+      }
+    }, 0);
 
-    if (extractedData && extractedData.length > 0) {
-      // saveCSV(extractedData, anomalyTime).then();
-    }
+    // clear extracted timout if present
+    if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
+
+    // Wait 6s before disable button
+    clearTimeoutRef.current = setTimeout(() => {
+      extractedAnomalyRef.current = [];
+    }, 6000);
   };
 
   const addAnomalyTimestamp = (timestamp: number) => {
@@ -75,11 +55,11 @@ export function useExtractData() {
     // If a new anomaly arrives within 200ms, reset the timeout
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
-    // Wait 200ms before processing anomalies
-    timeoutRef.current = setTimeout(async () => {
+    // Wait 500ms before processing anomalies
+    timeoutRef.current = setTimeout(() => {
       processAnomaly();
-    }, 100);
+    }, 500);
   };
 
-  return { addAnomalyTimestamp };
+  return { addAnomalyTimestamp, extractedAnomalyRef };
 }

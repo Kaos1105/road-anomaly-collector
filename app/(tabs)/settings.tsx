@@ -27,11 +27,6 @@ const AnomalySettingsScreen = observer(() => {
     return !gyroThreshold || !accelThreshold;
   }, [gyroThreshold, accelThreshold]);
 
-  useEffect(() => {
-    console.log(commonStore.accelThreshold);
-    console.log(commonStore.gyroThreshold);
-  }, [commonStore.accelThreshold, commonStore.gyroThreshold]);
-
   return (
     <ThemedView
       style={{
@@ -94,7 +89,6 @@ const AnomalySettingsScreen = observer(() => {
           <Text>OR</Text>
         </View>
       </RadioButton.Group>
-
       <Button
         disabled={btnDisabled}
         style={styles.saveBtn}

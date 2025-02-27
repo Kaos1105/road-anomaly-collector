@@ -1,7 +1,5 @@
 import { useStore } from "@/stores/stores";
-import { useSound } from "@/hooks/useSound";
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "@/hooks/useLocation";
 import { useExtractData } from "@/hooks/useExtractData";
 import {
   Accelerometer,
@@ -10,15 +8,68 @@ import {
   GyroscopeMeasurement,
 } from "expo-sensors";
 import { SensorData } from "@/types/common/sensor";
+import * as FileSystem from "expo-file-system";
+
+export type AnomalyType = "NOR" | "BUMP" | "MANHOLE" | "UNEVEN" | "POTHOLE";
+const saveCSV = async (
+  data: Array<SensorData | null>,
+  anomalyTime: number,
+  anomalyType: AnomalyType,
+) => {
+  try {
+    const folderPath = `${FileSystem.documentDirectory}${anomalyType}`;
+    const filePath = `${folderPath}/${anomalyTime}_anomaly.csv`;
+
+    // Ensure the subfolder exists
+    const folderInfo = await FileSystem.getInfoAsync(folderPath);
+    if (!folderInfo.exists) {
+      await FileSystem.makeDirectoryAsync(folderPath, { intermediates: true });
+    }
+
+    const header =
+      [
+        "timestamp",
+        "recordDateTime",
+        "latitude",
+        "longitude",
+        "gyroMag",
+        "accelMag",
+        "markAnomaly",
+      ].join(",") + "\n";
+
+    const rows = data
+      .map((item) =>
+        [
+          item?.timestamp ?? "",
+          item?.recordDateTime ?? "",
+          item?.latitude ?? "",
+          item?.longitude ?? "",
+          item?.gyroMag ?? "",
+          item?.accelMag ?? "",
+          item?.markAnomaly ?? "",
+        ].join(","),
+      )
+      .join("\n");
+
+    const csvContent = header + rows;
+    await FileSystem.writeAsStringAsync(filePath, csvContent, {
+      encoding: FileSystem.EncodingType.UTF8,
+    });
+
+    console.log(`CSV file saved successfully at: ${filePath}`);
+  } catch (error) {
+    console.error("Error saving data to CSV:", error);
+  }
+};
 
 export function useAnomalyCollect() {
   const { commonStore } = useStore();
-  const { playBeep } = useSound();
-  const { getLocation } = useLocation();
-  const { addAnomalyTimestamp } = useExtractData();
+  // const { playBeep } = useSound();
+  // const { getLocation } = useLocation();
+  const { addAnomalyTimestamp, extractedAnomalyRef } = useExtractData();
 
   const gyroDataRef = useRef<GyroscopeMeasurement | null>(null);
-  const accelDataRef = useRef<AccelerometerMeasurement | null>(null);
+  // const accelDataRef = useRef<AccelerometerMeasurement | null>(null);
   const currentSensorDataRef = useRef<SensorData | null>(null);
 
   const getSensorData = (
@@ -46,25 +97,32 @@ export function useAnomalyCollect() {
       return;
     }
     // Subscribe to sensors
-    Gyroscope.setUpdateInterval(10); // 5ms per sample
-    Accelerometer.setUpdateInterval(10);
+    Gyroscope.setUpdateInterval(20); // 5ms per sample
+    Accelerometer.setUpdateInterval(20);
 
     const gyroSub = Gyroscope.addListener((data) => {
       // console.log("gyro timestamp", data.timestamp);
       gyroDataRef.current = data;
     });
     const accelSub = Accelerometer.addListener((data) => {
-      if (!commonStore.isLogging) return;
-      if (data || gyroDataRef.current) {
-        currentSensorDataRef.current = getSensorData(data, gyroDataRef.current);
-        if (
-          currentSensorDataRef.current?.gyroMag > commonStore.gyroThreshold &&
-          currentSensorDataRef.current?.accelMag > commonStore.accelThreshold
-        ) {
-          recordAnomaly(currentSensorDataRef.current.timestamp);
-        }
-        commonStore.setBufferData(currentSensorDataRef.current);
+      if (!commonStore.isLogging || (!data && !gyroDataRef.current)) return;
+
+      const sensorData = getSensorData(data, gyroDataRef.current);
+      currentSensorDataRef.current = sensorData;
+
+      const { gyroMag, accelMag, timestamp } = sensorData;
+
+      const willRecordAnomaly = commonStore.isAndCondition
+        ? gyroMag > commonStore.gyroThreshold &&
+          accelMag > commonStore.accelThreshold
+        : gyroMag > commonStore.gyroThreshold ||
+          accelMag > commonStore.accelThreshold;
+
+      if (willRecordAnomaly) {
+        recordAnomaly(timestamp);
       }
+
+      commonStore.setBufferData(sensorData);
     });
 
     return () => {
@@ -81,12 +139,23 @@ export function useAnomalyCollect() {
   };
 
   const recordAnomaly = (anomalyTimestamp: number) => {
-    playBeep(); // Play sound when anomaly is detected
+    // playBeep(); // Play sound when anomaly is detected
     // Push the anomaly timestamp to the queue
     addAnomalyTimestamp(anomalyTimestamp);
   };
 
+  const saveExtracted = async (anomalyTime: AnomalyType) => {
+    let saveTasks: Promise<void>[] = [];
+    extractedAnomalyRef.current.forEach((val) => {
+      saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
+    });
+    await Promise.all(saveTasks);
+    extractedAnomalyRef.current = [];
+  };
+
   return {
     currentSensorDataRef,
+    saveExtracted,
+    isDisableBtn: extractedAnomalyRef.current.length > 0,
   };
 }

@@ -3,43 +3,32 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { observer } from "mobx-react";
 import { useStore } from "@/stores/stores";
-import { useEffect, useState } from "react";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
-import SensorGraph from "@/modules/home/SensorGraph";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
+import { useEffect, useRef, useState } from "react";
+import { set } from "mobx";
+
+const maxDataPoints = 50; // Limit data history
 
 const HomeScreen = observer(() => {
   const { commonStore } = useStore();
-  const { currentSensorDataRef } = useAnomalyCollect();
+  const { currentSensorDataRef, saveExtracted, isDisableBtn } =
+    useAnomalyCollect();
 
-  const [gyroData, setGyroData] = useState<number[]>([]);
-  const [accelData, setAccelData] = useState<number[]>([]);
-  const maxDataPoints = 50; // Display last 200 readings
+  // Use refs to avoid re-renders
+  const [accelData, setAccelData] = useState<number>();
+  const [gyroData, setGyroData] = useState<number>();
 
-  // Update accelData and gyroData every 500ms, only once during component mount
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setAccelData((prevAccelData) => {
-        const updatedAccelData = [
-          ...prevAccelData,
-          currentSensorDataRef.current?.accelMag ?? 0,
-        ];
-        return updatedAccelData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
-      });
+      // Update refs (stores data without triggering re-renders)
+      setAccelData(currentSensorDataRef.current?.accelMag ?? 0);
+      setGyroData(currentSensorDataRef.current?.gyroMag ?? 0);
+    }, 1000); // Update UI every second
 
-      setGyroData((prevGyroData) => {
-        const updatedGyroData = [
-          ...prevGyroData,
-          currentSensorDataRef.current?.gyroMag ?? 0,
-        ];
-        return updatedGyroData.slice(-maxDataPoints); // Keep only the latest maxDataPoints points
-      });
-    }, 100);
-
-    // Cleanup the interval when the component unmounts
-    return () => clearInterval(intervalId);
-  }, []); // Empty dependency array, so it runs only once during mount
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: "center" }}>
@@ -62,23 +51,30 @@ const HomeScreen = observer(() => {
             type="defaultSemiBold"
             style={{ fontSize: 16, color: "red" }}
           >
-            Gyro Magnitude: {currentSensorDataRef.current?.gyroMag.toFixed(3)}
+            Gyro Magnitude: {gyroData?.toFixed(3)}
           </ThemedText>
           <ThemedText
             type="defaultSemiBold"
             style={{ fontSize: 16, color: "green" }}
           >
-            Accel Magnitude: {currentSensorDataRef.current?.accelMag.toFixed(3)}
+            Accel Magnitude: {accelData?.toFixed(3)}
           </ThemedText>
         </ThemedView>
 
-        {commonStore.isLogging && (gyroData.length || accelData.length) ? (
-          <SensorGraph accelData={accelData} gyroData={gyroData} />
-        ) : null}
+        {/*{commonStore.isLogging &&*/}
+        {/*(gyroDataRef.current.length || accelDataRef.current.length) ? (*/}
+        {/*  <SensorGraph*/}
+        {/*    accelData={accelDataRef.current}*/}
+        {/*    gyroData={gyroDataRef.current}*/}
+        {/*  />*/}
+        {/*) : null}*/}
 
         <LogCheckBox />
 
-        <AnomalyBtnGroup />
+        <AnomalyBtnGroup
+          isBtnEnabled={isDisableBtn}
+          setAnomalyType={saveExtracted}
+        />
       </ThemedView>
     </ScrollView>
   );
