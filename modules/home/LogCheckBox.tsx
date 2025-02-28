@@ -1,11 +1,10 @@
-import { observer } from "mobx-react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { useStore } from "@/stores/stores";
+import { useCommonStore } from "@/stores/commonStore";
 
-const LogCheckBox = observer(() => {
-  const { commonStore } = useStore();
+const LogCheckBox = () => {
+  const commonStore = useCommonStore();
 
   return (
     <>
@@ -31,7 +30,7 @@ const LogCheckBox = observer(() => {
       </TouchableOpacity>
     </>
   );
-});
+};
 
 export default LogCheckBox;
 

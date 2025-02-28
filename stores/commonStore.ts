@@ -1,86 +1,51 @@
-import { makeAutoObservable, runInAction } from "mobx";
-import RootStores from "@/stores/stores";
-import { SensorData } from "@/types/common/sensor";
+import { create } from "zustand";
 import { CircularBuffer } from "@/hooks/useCircularBuffer";
+import { SensorData } from "@/types/common/sensor";
 
 // Thresholds for anomaly detection
-const ACCEL_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
-const GYRO_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
+const ACCEL_THRESHOLD = 2.0;
+const GYRO_THRESHOLD = 2.0;
 const IS_AND_CONDITION = false;
-// Buffer settings (12s window = 600 samples, 2s overlap = 100 samples at 50hz)
+
+// Buffer settings (10s window = 500 samples, 2s overlap = 100 samples at 50hz)
 const WINDOW_SIZE = 500;
 const OVERLAP_SIZE = 50;
 
-export default class CommonStore {
-  rootStore: RootStores;
+interface CommonStore {
+  accelThreshold: number;
+  gyroThreshold: number;
+  isLogging: boolean;
+  isAndCondition: boolean;
+  buffer: CircularBuffer<SensorData>;
 
-  //state
-  accelThreshold: number = ACCEL_THRESHOLD;
-  gyroThreshold: number = GYRO_THRESHOLD;
-  isLogging: boolean = false;
-  isAndCondition: boolean = IS_AND_CONDITION;
-  buffer = new CircularBuffer<SensorData>(WINDOW_SIZE, OVERLAP_SIZE);
+  // Actions
+  setAccelThreshold: (threshold: number) => void;
+  setGyroThreshold: (threshold: number) => void;
+  setIsAndCondition: (condition: boolean) => void;
+  setIsLogging: (logging: boolean) => void;
+  setBufferData: (data: SensorData) => void;
+  extractAnomaly: (anomalyTime: number) => (SensorData | null)[];
+}
 
-  constructor(rootStore: RootStores) {
-    this.rootStore = rootStore;
-    makeAutoObservable(this, {
-      buffer: false,
-    });
-  }
+export const useCommonStore = create<CommonStore>((set, get) => ({
+  accelThreshold: ACCEL_THRESHOLD,
+  gyroThreshold: GYRO_THRESHOLD,
+  isLogging: false,
+  isAndCondition: IS_AND_CONDITION,
+  buffer: new CircularBuffer<SensorData>(WINDOW_SIZE, OVERLAP_SIZE),
 
-  setAccelThreshold(accelThreshold: number) {
-    this.accelThreshold = accelThreshold;
-  }
+  setAccelThreshold: (threshold) => set({ accelThreshold: threshold }),
+  setGyroThreshold: (threshold) => set({ gyroThreshold: threshold }),
+  setIsAndCondition: (condition) => set({ isAndCondition: condition }),
+  setIsLogging: (logging) => set({ isLogging: logging }),
 
-  getAccelThreshold() {
-    return this.accelThreshold;
-  }
+  setBufferData: (data) => {
+    get().buffer.add(data);
+  },
 
-  setGyroThreshold(gyroThreshold: number) {
-    this.gyroThreshold = gyroThreshold;
-  }
-
-  getGyroThreshold() {
-    return this.gyroThreshold;
-  }
-
-  setIsAndCondition(isAndCondition: boolean) {
-    this.isAndCondition = isAndCondition;
-  }
-
-  getIsAndCondition() {
-    return this.isAndCondition;
-  }
-
-  setIsLogging(isLogging: boolean) {
-    runInAction(() => {
-      this.isLogging = isLogging;
-    });
-  }
-
-  getIsLogging() {
-    return this.isLogging;
-  }
-
-  setBufferData(data: SensorData) {
-    this.buffer.add(data);
-  }
-
-  // setExtractedData(data: ExtractedData) {
-  //   runInAction(() => {
-  //     this.anomalyData.push(data);
-  //   });
-  // }
-  //
-  // clearExtractedData() {
-  //   runInAction(() => {
-  //     this.anomalyData = [];
-  //   });
-  // }
-
-  extractAnomaly(anomalyTime: number) {
-    return this.buffer
-      .getBuffer()
+  extractAnomaly: (anomalyTime) => {
+    return get()
+      .buffer.getBuffer()
       .sort((x, y) => (x?.timestamp ?? 0) - (y?.timestamp ?? 0))
       .filter(
         (entry) =>
@@ -88,5 +53,5 @@ export default class CommonStore {
           entry.timestamp >= anomalyTime - 1000 &&
           entry.timestamp <= anomalyTime + 1000,
       );
-  }
-}
+  },
+}));

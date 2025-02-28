@@ -1,4 +1,3 @@
-import { useStore } from "@/stores/stores";
 import { useEffect, useRef } from "react";
 import { useExtractData } from "@/hooks/useExtractData";
 import {
@@ -10,6 +9,7 @@ import {
 import { SensorData } from "@/types/common/sensor";
 import * as FileSystem from "expo-file-system";
 import { InteractionManager } from "react-native";
+import { useCommonStore } from "@/stores/commonStore";
 
 export type AnomalyType = "NOR" | "BUMP" | "MANHOLE" | "UNEVEN" | "POTHOLE";
 const saveCSV = async (
@@ -64,7 +64,7 @@ const saveCSV = async (
 };
 
 export function useAnomalyCollect() {
-  const { commonStore } = useStore();
+  const commonStore = useCommonStore();
   // const { playBeep } = useSound();
   // const { getLocation } = useLocation();
   const { addAnomalyTimestamp, extractedAnomalyRef } = useExtractData();
@@ -98,8 +98,8 @@ export function useAnomalyCollect() {
       return;
     }
     // Subscribe to sensors
-    Gyroscope.setUpdateInterval(200); // 5ms per sample
-    Accelerometer.setUpdateInterval(200);
+    Gyroscope.setUpdateInterval(20); // 5ms per sample
+    Accelerometer.setUpdateInterval(20);
 
     const gyroSub = Gyroscope.addListener((data) => {
       // console.log("gyro timestamp", data.timestamp);
@@ -147,11 +147,10 @@ export function useAnomalyCollect() {
 
   const saveExtracted = async (anomalyTime: AnomalyType) => {
     let saveTasks: Promise<void>[] = [];
-    console.log(extractedAnomalyRef.current.length);
-    // extractedAnomalyRef.current.forEach((val) => {
-    //   saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
-    // });
-    // await Promise.all(saveTasks);
+    extractedAnomalyRef.current.forEach((val) => {
+      saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
+    });
+    await Promise.all(saveTasks);
     extractedAnomalyRef.current = [];
   };
 

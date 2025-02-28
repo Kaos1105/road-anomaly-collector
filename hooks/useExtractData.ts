@@ -1,6 +1,6 @@
 import { useRef } from "react";
-import { useStore } from "@/stores/stores";
 import { SensorData } from "@/types/common/sensor";
+import { useCommonStore } from "@/stores/commonStore";
 
 type ExtractedData = {
   extractedData: (SensorData | null)[];
@@ -8,42 +8,32 @@ type ExtractedData = {
 };
 
 export function useExtractData() {
-  const { commonStore } = useStore();
+  const commonStore = useCommonStore();
   const anomalyQueueRef = useRef<number[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const anomalyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const clearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const extractedAnomalyRef = useRef<ExtractedData[]>([]);
 
   const processAnomaly = () => {
     if (!anomalyQueueRef.current.length) return;
-    // Take the middle timestamp
-    const middleIndex = Math.floor(anomalyQueueRef.current.length / 2);
-    const anomalyTime = anomalyQueueRef.current[middleIndex];
+    const anomalyTime =
+      anomalyQueueRef.current[anomalyQueueRef.current.length - 1];
     // Clear the queue after processing
     anomalyQueueRef.current = [];
 
-    if (anomalyTimeoutRef.current) clearTimeout(anomalyTimeoutRef.current);
-    anomalyTimeoutRef.current = setTimeout(() => {
-      extractAnomaly(anomalyTime);
-    }, 1000);
+    extractAnomaly(anomalyTime);
   };
 
   const extractAnomaly = (anomalyTime: number) => {
     // Extract data based on this timestamp
     const extractedData = commonStore.extractAnomaly(anomalyTime);
-    console.log("Extracted Data for Anomaly:", extractedData);
+    console.log("Extracted Data for Anomaly:", extractedData.length);
     if (extractedData && extractedData.length > 0) {
       extractedAnomalyRef.current.push({
         extractedData,
         timestamp: anomalyTime,
       });
     }
-
-    // clear timeout if present
-    if (clearTimeoutRef.current) clearTimeout(clearTimeoutRef.current);
-    // Wait 5s before disable button
-    clearTimeoutRef.current = setTimeout(() => {
+    setTimeout(() => {
       extractedAnomalyRef.current = [];
     }, 5000);
   };
@@ -56,7 +46,7 @@ export function useExtractData() {
     // Wait 200ms before processing anomalies
     timeoutRef.current = setTimeout(() => {
       processAnomaly();
-    }, 200);
+    }, 1000);
   };
 
   return { addAnomalyTimestamp, extractedAnomalyRef };

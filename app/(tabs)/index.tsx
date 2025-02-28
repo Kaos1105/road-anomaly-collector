@@ -5,9 +5,8 @@ import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
 import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
 
-const HomeScreen = observer(() => {
+const HomeScreen = () => {
   const { currentSensorDataRef, saveExtracted, isMarkBtnEnabled } =
     useAnomalyCollect();
   const [accelData, setAccelData] = useState<number>();
@@ -71,7 +70,7 @@ const HomeScreen = observer(() => {
       </ThemedView>
     </ScrollView>
   );
-});
+};
 export default HomeScreen;
 
 const styles = StyleSheet.create({});

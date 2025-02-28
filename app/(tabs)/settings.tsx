@@ -4,11 +4,10 @@ import { RadioButton } from "react-native-paper";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/button/Button";
-import { useStore } from "@/stores/stores";
-import { observer } from "mobx-react";
+import { useCommonStore } from "@/stores/commonStore";
 
-const AnomalySettingsScreen = observer(() => {
-  const { commonStore } = useStore();
+const AnomalySettingsScreen = () => {
+  const commonStore = useCommonStore();
   const [gyroThreshold, setGyroThreshold] = useState(commonStore.gyroThreshold);
   const [accelThreshold, setAccelThreshold] = useState(
     commonStore.accelThreshold,
@@ -97,7 +96,7 @@ const AnomalySettingsScreen = observer(() => {
       ></Button>
     </ThemedView>
   );
-});
+};
 
 export default AnomalySettingsScreen;
 
