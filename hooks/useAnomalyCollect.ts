@@ -9,6 +9,7 @@ import {
 } from "expo-sensors";
 import { SensorData } from "@/types/common/sensor";
 import * as FileSystem from "expo-file-system";
+import { InteractionManager } from "react-native";
 
 export type AnomalyType = "NOR" | "BUMP" | "MANHOLE" | "UNEVEN" | "POTHOLE";
 const saveCSV = async (
@@ -97,8 +98,8 @@ export function useAnomalyCollect() {
       return;
     }
     // Subscribe to sensors
-    Gyroscope.setUpdateInterval(20); // 5ms per sample
-    Accelerometer.setUpdateInterval(20);
+    Gyroscope.setUpdateInterval(200); // 5ms per sample
+    Accelerometer.setUpdateInterval(200);
 
     const gyroSub = Gyroscope.addListener((data) => {
       // console.log("gyro timestamp", data.timestamp);
@@ -146,7 +147,7 @@ export function useAnomalyCollect() {
 
   const saveExtracted = async (anomalyTime: AnomalyType) => {
     let saveTasks: Promise<void>[] = [];
-    console.log(extractedAnomalyRef.current);
+    console.log(extractedAnomalyRef.current.length);
     // extractedAnomalyRef.current.forEach((val) => {
     //   saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
     // });
@@ -157,6 +158,6 @@ export function useAnomalyCollect() {
   return {
     currentSensorDataRef,
     saveExtracted,
-    isDisableBtn: extractedAnomalyRef.current.length > 0,
+    isMarkBtnEnabled: extractedAnomalyRef.current.length > 0,
   };
 }

@@ -81,6 +81,7 @@ export default class CommonStore {
   extractAnomaly(anomalyTime: number) {
     return this.buffer
       .getBuffer()
+      .sort((x, y) => (x?.timestamp ?? 0) - (y?.timestamp ?? 0))
       .filter(
         (entry) =>
           entry &&

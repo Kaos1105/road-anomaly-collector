@@ -14,11 +14,9 @@ export function useExtractData() {
   const anomalyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const clearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const extractedAnomalyRef = useRef<ExtractedData[]>([]);
-  const isProcessingRef = useRef(false); // Prevent overlapping processing
 
   const processAnomaly = () => {
-    if (anomalyQueueRef.current.length === 0 || isProcessingRef.current) return;
-    isProcessingRef.current = true; // Lock processing
+    if (!anomalyQueueRef.current.length) return;
     // Take the middle timestamp
     const middleIndex = Math.floor(anomalyQueueRef.current.length / 2);
     const anomalyTime = anomalyQueueRef.current[middleIndex];
@@ -28,14 +26,13 @@ export function useExtractData() {
     if (anomalyTimeoutRef.current) clearTimeout(anomalyTimeoutRef.current);
     anomalyTimeoutRef.current = setTimeout(() => {
       extractAnomaly(anomalyTime);
-      isProcessingRef.current = false; // Unlock after completion
     }, 1000);
   };
 
   const extractAnomaly = (anomalyTime: number) => {
     // Extract data based on this timestamp
     const extractedData = commonStore.extractAnomaly(anomalyTime);
-    console.log("Extracted Data for Anomaly:", extractedData.length);
+    console.log("Extracted Data for Anomaly:", extractedData);
     if (extractedData && extractedData.length > 0) {
       extractedAnomalyRef.current.push({
         extractedData,

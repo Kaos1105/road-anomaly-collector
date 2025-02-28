@@ -4,10 +4,11 @@ import { ThemedView } from "@/components/ThemedView";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { observer } from "mobx-react";
 
-const HomeScreen = () => {
-  const { currentSensorDataRef, saveExtracted, isDisableBtn } =
+const HomeScreen = observer(() => {
+  const { currentSensorDataRef, saveExtracted, isMarkBtnEnabled } =
     useAnomalyCollect();
   const [accelData, setAccelData] = useState<number>();
   const [gyroData, setGyroData] = useState<number>();
@@ -64,13 +65,13 @@ const HomeScreen = () => {
         <LogCheckBox />
 
         <AnomalyBtnGroup
-          isBtnEnabled={isDisableBtn}
+          isBtnEnabled={isMarkBtnEnabled}
           setAnomalyType={saveExtracted}
         />
       </ThemedView>
     </ScrollView>
   );
-};
+});
 export default HomeScreen;
 
 const styles = StyleSheet.create({});
