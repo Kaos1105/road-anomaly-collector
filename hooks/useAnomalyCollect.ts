@@ -1,5 +1,5 @@
 import { useStore } from "@/stores/stores";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useExtractData } from "@/hooks/useExtractData";
 import {
   Accelerometer,
@@ -144,12 +144,20 @@ export function useAnomalyCollect() {
     addAnomalyTimestamp(anomalyTimestamp);
   };
 
-  const saveExtracted = async (anomalyTime: AnomalyType) => {
-    let saveTasks: Promise<void>[] = [];
-    extractedAnomalyRef.current.forEach((val) => {
-      saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
-    });
-    await Promise.all(saveTasks);
+  const saveExtracted = async (anomalyType: AnomalyType) => {
+    const batchSize = 2; // Process 3 files at a time
+    const batches = [];
+    for (let i = 0; i < extractedAnomalyRef.current.length; i += batchSize) {
+      batches.push(extractedAnomalyRef.current.slice(i, i + batchSize));
+    }
+
+    for (const batch of batches) {
+      await Promise.all(
+        batch.map((val) =>
+          saveCSV(val.extractedData, val.timestamp, anomalyType),
+        ),
+      );
+    }
     extractedAnomalyRef.current = [];
   };
 

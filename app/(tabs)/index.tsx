@@ -18,7 +18,7 @@ const HomeScreen = () => {
       // Update ref without triggering re-render
       latestDataRef.current.accel = currentSensorDataRef.current?.accelMag ?? 0;
       latestDataRef.current.gyro = currentSensorDataRef.current?.gyroMag ?? 0;
-    }, 200); // Reduced frequency
+    }, 500); // Reduced frequency
 
     return () => clearInterval(intervalId);
   }, []);
