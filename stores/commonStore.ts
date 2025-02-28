@@ -79,26 +79,13 @@ export default class CommonStore {
   // }
 
   extractAnomaly(anomalyTime: number) {
-    const buffer = this.buffer.getBuffer();
-    const startTime = anomalyTime - 1000;
-    const endTime = anomalyTime + 1000;
-
-    let startIdx = 0;
-    let endIdx = buffer.length - 1;
-
-    for (let i = 0; i < buffer.length; i++) {
-      if (buffer[i] && buffer[i]!.timestamp >= startTime) {
-        startIdx = i;
-        break;
-      }
-    }
-    for (let i = buffer.length - 1; i >= 0; i--) {
-      if (buffer[i] && buffer[i]!.timestamp <= endTime) {
-        endIdx = i;
-        break;
-      }
-    }
-
-    return buffer.slice(startIdx, endIdx + 1).filter((entry) => entry !== null);
+    return this.buffer
+      .getBuffer()
+      .filter(
+        (entry) =>
+          entry &&
+          entry.timestamp >= anomalyTime - 1000 &&
+          entry.timestamp <= anomalyTime + 1000,
+      );
   }
 }
