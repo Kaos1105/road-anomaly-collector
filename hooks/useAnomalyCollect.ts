@@ -144,20 +144,13 @@ export function useAnomalyCollect() {
     addAnomalyTimestamp(anomalyTimestamp);
   };
 
-  const saveExtracted = async (anomalyType: AnomalyType) => {
-    const batchSize = 2; // Process 3 files at a time
-    const batches = [];
-    for (let i = 0; i < extractedAnomalyRef.current.length; i += batchSize) {
-      batches.push(extractedAnomalyRef.current.slice(i, i + batchSize));
-    }
-
-    for (const batch of batches) {
-      await Promise.all(
-        batch.map((val) =>
-          saveCSV(val.extractedData, val.timestamp, anomalyType),
-        ),
-      );
-    }
+  const saveExtracted = async (anomalyTime: AnomalyType) => {
+    let saveTasks: Promise<void>[] = [];
+    console.log(extractedAnomalyRef.current);
+    // extractedAnomalyRef.current.forEach((val) => {
+    //   saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
+    // });
+    // await Promise.all(saveTasks);
     extractedAnomalyRef.current = [];
   };
 

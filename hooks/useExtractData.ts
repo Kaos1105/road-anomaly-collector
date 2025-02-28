@@ -28,7 +28,6 @@ export function useExtractData() {
     if (anomalyTimeoutRef.current) clearTimeout(anomalyTimeoutRef.current);
     anomalyTimeoutRef.current = setTimeout(() => {
       extractAnomaly(anomalyTime);
-      anomalyTimeoutRef.current = null;
       isProcessingRef.current = false; // Unlock after completion
     }, 1000);
   };
@@ -36,7 +35,7 @@ export function useExtractData() {
   const extractAnomaly = (anomalyTime: number) => {
     // Extract data based on this timestamp
     const extractedData = commonStore.extractAnomaly(anomalyTime);
-    // console.log("Extracted Data for Anomaly:", extractedData.length);
+    console.log("Extracted Data for Anomaly:", extractedData.length);
     if (extractedData && extractedData.length > 0) {
       extractedAnomalyRef.current.push({
         extractedData,
@@ -49,7 +48,6 @@ export function useExtractData() {
     // Wait 5s before disable button
     clearTimeoutRef.current = setTimeout(() => {
       extractedAnomalyRef.current = [];
-      clearTimeoutRef.current = null;
     }, 5000);
   };
 
@@ -61,7 +59,6 @@ export function useExtractData() {
     // Wait 200ms before processing anomalies
     timeoutRef.current = setTimeout(() => {
       processAnomaly();
-      timeoutRef.current = null; // Reset timeout ref
     }, 200);
   };
 

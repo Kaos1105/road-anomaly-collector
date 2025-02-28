@@ -4,23 +4,22 @@ import { ThemedView } from "@/components/ThemedView";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const HomeScreen = () => {
   const { currentSensorDataRef, saveExtracted, isDisableBtn } =
     useAnomalyCollect();
-
-  // Use refs to avoid re-renders
-  const latestDataRef = useRef({ accel: 0, gyro: 0 }); // Store latest values without triggering re-render
+  const [accelData, setAccelData] = useState<number>();
+  const [gyroData, setGyroData] = useState<number>();
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // Update ref without triggering re-render
-      latestDataRef.current.accel = currentSensorDataRef.current?.accelMag ?? 0;
-      latestDataRef.current.gyro = currentSensorDataRef.current?.gyroMag ?? 0;
-    }, 500); // Reduced frequency
+      // Update refs (stores data without triggering re-renders)
+      setAccelData(currentSensorDataRef.current?.accelMag ?? 0);
+      setGyroData(currentSensorDataRef.current?.gyroMag ?? 0);
+    }, 500); // Update UI every second
 
-    return () => clearInterval(intervalId);
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, []);
 
   return (
@@ -44,13 +43,13 @@ const HomeScreen = () => {
             type="defaultSemiBold"
             style={{ fontSize: 16, color: "red" }}
           >
-            Gyro Magnitude: {latestDataRef.current.gyro?.toFixed(3)}
+            Gyro Magnitude: {gyroData?.toFixed(3)}
           </ThemedText>
           <ThemedText
             type="defaultSemiBold"
             style={{ fontSize: 16, color: "green" }}
           >
-            Accel Magnitude: {latestDataRef.current.accel?.toFixed(3)}
+            Accel Magnitude: {accelData?.toFixed(3)}
           </ThemedText>
         </ThemedView>
 
