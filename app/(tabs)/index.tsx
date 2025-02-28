@@ -1,30 +1,26 @@
 import { StyleSheet, ScrollView } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { observer } from "mobx-react";
-import { useStore } from "@/stores/stores";
 import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
-const HomeScreen = observer(() => {
-  const { commonStore } = useStore();
+const HomeScreen = () => {
   const { currentSensorDataRef, saveExtracted, isDisableBtn } =
     useAnomalyCollect();
 
   // Use refs to avoid re-renders
-  const [accelData, setAccelData] = useState<number>();
-  const [gyroData, setGyroData] = useState<number>();
+  const latestDataRef = useRef({ accel: 0, gyro: 0 }); // Store latest values without triggering re-render
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // Update refs (stores data without triggering re-renders)
-      setAccelData(currentSensorDataRef.current?.accelMag ?? 0);
-      setGyroData(currentSensorDataRef.current?.gyroMag ?? 0);
-    }, 200); // Update UI every second
+      // Update ref without triggering re-render
+      latestDataRef.current.accel = currentSensorDataRef.current?.accelMag ?? 0;
+      latestDataRef.current.gyro = currentSensorDataRef.current?.gyroMag ?? 0;
+    }, 200); // Reduced frequency
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
@@ -48,13 +44,13 @@ const HomeScreen = observer(() => {
             type="defaultSemiBold"
             style={{ fontSize: 16, color: "red" }}
           >
-            Gyro Magnitude: {gyroData?.toFixed(3)}
+            Gyro Magnitude: {latestDataRef.current.gyro?.toFixed(3)}
           </ThemedText>
           <ThemedText
             type="defaultSemiBold"
             style={{ fontSize: 16, color: "green" }}
           >
-            Accel Magnitude: {accelData?.toFixed(3)}
+            Accel Magnitude: {latestDataRef.current.accel?.toFixed(3)}
           </ThemedText>
         </ThemedView>
 
@@ -75,7 +71,7 @@ const HomeScreen = observer(() => {
       </ThemedView>
     </ScrollView>
   );
-});
+};
 export default HomeScreen;
 
 const styles = StyleSheet.create({});

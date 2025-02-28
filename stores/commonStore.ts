@@ -7,9 +7,9 @@ import { CircularBuffer } from "@/hooks/useCircularBuffer";
 const ACCEL_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
 const GYRO_THRESHOLD = 2.0; // 5cm pothole Adjust based on testing
 const IS_AND_CONDITION = false;
-// Buffer settings (10s window = 500 samples, 1s overlap = 50 samples at 50hz)
-const WINDOW_SIZE = 500;
-const OVERLAP_SIZE = 50;
+// Buffer settings (12s window = 600 samples, 2s overlap = 100 samples at 50hz)
+const WINDOW_SIZE = 600;
+const OVERLAP_SIZE = 100;
 
 export default class CommonStore {
   rootStore: RootStores;

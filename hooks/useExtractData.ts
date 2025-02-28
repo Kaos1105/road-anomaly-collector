@@ -26,6 +26,7 @@ export function useExtractData() {
     if (anomalyTimeoutRef.current) clearTimeout(anomalyTimeoutRef.current);
     anomalyTimeoutRef.current = setTimeout(() => {
       extractAnomaly(anomalyTime);
+      anomalyTimeoutRef.current = null;
     }, 1000);
   };
 
@@ -45,6 +46,7 @@ export function useExtractData() {
     // Wait 5s before disable button
     clearTimeoutRef.current = setTimeout(() => {
       extractedAnomalyRef.current = [];
+      clearTimeoutRef.current = null;
     }, 5000);
   };
 
@@ -56,6 +58,7 @@ export function useExtractData() {
     // Wait 200ms before processing anomalies
     timeoutRef.current = setTimeout(() => {
       processAnomaly();
+      timeoutRef.current = null; // Reset timeout ref
     }, 200);
   };
 
