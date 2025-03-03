@@ -18,7 +18,8 @@
       },
       "permissions": [
         "HIGH_SAMPLING_RATE_SENSORS"
-      ]
+      ],
+      "package": "com.dan1105.roadanomalycollector"
     },
     "web": {
       "bundler": "metro",

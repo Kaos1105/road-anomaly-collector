@@ -8,7 +8,6 @@ import {
 } from "expo-sensors";
 import { SensorData } from "@/types/common/sensor";
 import * as FileSystem from "expo-file-system";
-import { InteractionManager } from "react-native";
 import { useCommonStore } from "@/stores/commonStore";
 
 export type AnomalyType = "NOR" | "BUMP" | "MANHOLE" | "UNEVEN" | "POTHOLE";
@@ -18,14 +17,7 @@ const saveCSV = async (
   anomalyType: AnomalyType,
 ) => {
   try {
-    const folderPath = `${FileSystem.documentDirectory}${anomalyType}`;
-    const filePath = `${folderPath}/${anomalyTime}_anomaly.csv`;
-
-    // Ensure the subfolder exists
-    const folderInfo = await FileSystem.getInfoAsync(folderPath);
-    if (!folderInfo.exists) {
-      await FileSystem.makeDirectoryAsync(folderPath, { intermediates: true });
-    }
+    const filePath = `${FileSystem.documentDirectory}${anomalyTime}_${anomalyType}_anomaly.csv`;
 
     const header =
       [
