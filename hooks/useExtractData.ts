@@ -27,7 +27,7 @@ export function useExtractData() {
     // Extract data based on this timestamp
     const extractedData = commonStore.extractAnomaly(anomalyTime);
     console.log("Extracted Data for Anomaly:", extractedData.length);
-    if (extractedData && extractedData.length > 0) {
+    if (extractedData.length > 0) {
       extractedAnomalyRef.current.push({
         extractedData,
         timestamp: anomalyTime,

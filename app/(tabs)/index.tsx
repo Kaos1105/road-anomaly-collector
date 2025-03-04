@@ -5,21 +5,27 @@ import { useAnomalyCollect } from "@/hooks/useAnomalyCollect";
 import AnomalyBtnGroup from "@/modules/home/AnomalyBtnGroup";
 import LogCheckBox from "@/modules/home/LogCheckBox";
 import { useEffect, useState } from "react";
+import { useCommonStore } from "@/stores/commonStore";
 
 const HomeScreen = () => {
-  const { currentSensorDataRef, saveExtracted, isMarkBtnEnabled } =
+  const { currentSensorDataRef, saveExtracted, extractedAnomalyRef } =
     useAnomalyCollect();
+  const { isLogging } = useCommonStore();
   const [accelData, setAccelData] = useState<number>();
   const [gyroData, setGyroData] = useState<number>();
+  const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       // Update refs (stores data without triggering re-renders)
       setAccelData(currentSensorDataRef.current?.accelMag ?? 0);
       setGyroData(currentSensorDataRef.current?.gyroMag ?? 0);
+      setButtonEnabled(extractedAnomalyRef.current.length > 0);
     }, 500); // Update UI every second
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    return () => {
+      clearInterval(intervalId);
+    }; // Cleanup on unmount
   }, []);
 
   return (
@@ -64,7 +70,7 @@ const HomeScreen = () => {
         <LogCheckBox />
 
         <AnomalyBtnGroup
-          isBtnEnabled={isMarkBtnEnabled}
+          isBtnEnabled={buttonEnabled && isLogging}
           setAnomalyType={saveExtracted}
         />
       </ThemedView>

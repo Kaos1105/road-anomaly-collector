@@ -95,14 +95,14 @@ export function useAnomalyCollect() {
 
     const gyroSub = Gyroscope.addListener((data) => {
       // console.log("gyro timestamp", data.timestamp);
-      gyroDataRef.current = data;
+      // gyroDataRef.current = data;
     });
     const accelSub = Accelerometer.addListener((data) => {
+      //TODO: freeze when overload
       if (!commonStore.isLogging || (!data && !gyroDataRef.current)) return;
 
       const sensorData = getSensorData(data, gyroDataRef.current);
       currentSensorDataRef.current = sensorData;
-
       const { gyroMag, accelMag, timestamp } = sensorData;
 
       const willRecordAnomaly = commonStore.isAndCondition
@@ -149,6 +149,6 @@ export function useAnomalyCollect() {
   return {
     currentSensorDataRef,
     saveExtracted,
-    isMarkBtnEnabled: extractedAnomalyRef.current.length > 0,
+    extractedAnomalyRef,
   };
 }
