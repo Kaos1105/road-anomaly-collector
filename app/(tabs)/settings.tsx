@@ -18,12 +18,15 @@ const AnomalySettingsScreen = () => {
   const [isAndCondition, setIsAndCondition] = useState(
     commonStore.isAndCondition ? "AND" : "OR",
   );
-  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const handleSave = () => {
     commonStore.setIsAndCondition(isAndCondition === "AND");
     commonStore.setAccelThreshold(accelThreshold);
     commonStore.setGyroThreshold(gyroThreshold);
+    Toast.show({
+      type: "info",
+      text1: "Settings save",
+    });
   };
 
   const shareAllCSVFiles = async () => {
@@ -133,6 +136,7 @@ const AnomalySettingsScreen = () => {
       </RadioButton.Group>
 
       <Button
+        disabled={!accelThreshold || !gyroThreshold}
         style={styles.saveBtn}
         onPress={handleSave}
         title="Save Settings"
