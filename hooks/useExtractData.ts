@@ -35,7 +35,7 @@ export function useExtractData() {
     }
     setTimeout(() => {
       extractedAnomalyRef.current = [];
-    }, 5000);
+    }, 4000);
   };
 
   const addAnomalyTimestamp = (timestamp: number) => {
