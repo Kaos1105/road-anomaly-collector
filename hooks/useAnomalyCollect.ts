@@ -94,13 +94,12 @@ export function useAnomalyCollect() {
     Accelerometer.setUpdateInterval(20);
 
     const gyroSub = Gyroscope.addListener((data) => {
-      // console.log("gyro timestamp", data.timestamp);
-      // gyroDataRef.current = data;
+      gyroDataRef.current = data;
     });
     const accelSub = Accelerometer.addListener((data) => {
       //TODO: freeze when overload
       if (!commonStore.isLogging || (!data && !gyroDataRef.current)) return;
-
+      //
       const sensorData = getSensorData(data, gyroDataRef.current);
       currentSensorDataRef.current = sensorData;
       const { gyroMag, accelMag, timestamp } = sensorData;
