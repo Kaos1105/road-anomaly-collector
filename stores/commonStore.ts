@@ -3,8 +3,8 @@ import { CircularBuffer } from "@/hooks/useCircularBuffer";
 import { SensorData } from "@/types/common/sensor";
 
 // Thresholds for anomaly detection
-const ACCEL_THRESHOLD = 2.0;
-const GYRO_THRESHOLD = 2.0;
+const ACCEL_THRESHOLD = 15.0;
+const GYRO_THRESHOLD = 5.0;
 const IS_AND_CONDITION = false;
 
 // Buffer settings (10s window = 500 samples, 2s overlap = 100 samples at 50hz)

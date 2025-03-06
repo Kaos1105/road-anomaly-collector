@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "react";
 import { useExtractData } from "@/hooks/useExtractData";
-import {
-  Accelerometer,
-  AccelerometerMeasurement,
-  Gyroscope,
-  GyroscopeMeasurement,
-} from "expo-sensors";
+import { AccelerometerMeasurement, GyroscopeMeasurement } from "expo-sensors";
 import { SensorData } from "@/types/common/sensor";
 import * as FileSystem from "expo-file-system";
 import { useCommonStore } from "@/stores/commonStore";
+import {
+  accelerometer,
+  gyroscope,
+  setUpdateIntervalForType,
+  SensorTypes,
+} from "react-native-sensors";
 
 export type AnomalyType = "NOR" | "BUMP" | "MANHOLE" | "UNEVEN" | "POTHOLE";
 const saveCSV = async (
@@ -86,21 +87,20 @@ export function useAnomalyCollect() {
   };
 
   useEffect(() => {
-    if (!commonStore.isLogging) {
-      return;
-    }
-    // Subscribe to sensors
-    Gyroscope.setUpdateInterval(20); // 5ms per sample
-    Accelerometer.setUpdateInterval(20);
+    setUpdateIntervalForType(SensorTypes.accelerometer, 20); // defaults to 100ms
+    setUpdateIntervalForType(SensorTypes.gyroscope, 20); // defaults to 100ms
 
-    const gyroSub = Gyroscope.addListener((data) => {
-      gyroDataRef.current = data;
+    const gyroSub = gyroscope.subscribe((x) => {
+      if (!commonStore.isLogging) {
+        return;
+      }
+      gyroDataRef.current = x;
     });
-    const accelSub = Accelerometer.addListener((data) => {
-      //TODO: freeze when overload
-      if (!commonStore.isLogging || (!data && !gyroDataRef.current)) return;
-      //
-      const sensorData = getSensorData(data, gyroDataRef.current);
+    const accelSub = accelerometer.subscribe((x) => {
+      if (!commonStore.isLogging) {
+        return;
+      }
+      const sensorData = getSensorData(x, gyroDataRef.current);
       currentSensorDataRef.current = sensorData;
       const { gyroMag, accelMag, timestamp } = sensorData;
 
@@ -110,7 +110,11 @@ export function useAnomalyCollect() {
         : gyroMag > commonStore.gyroThreshold ||
           accelMag > commonStore.accelThreshold;
 
+      // console.log(willRecordAnomaly);
       if (willRecordAnomaly) {
+        console.log(true);
+        console.log("gyroMag", gyroMag);
+        console.log("accelMag", accelMag);
         recordAnomaly(timestamp);
       }
 
@@ -118,10 +122,48 @@ export function useAnomalyCollect() {
     });
 
     return () => {
-      gyroSub.remove();
-      accelSub.remove();
+      gyroSub.unsubscribe();
+      accelSub.unsubscribe();
     };
   }, [commonStore.isLogging]);
+
+  // useEffect(() => {
+  //   if (!commonStore.isLogging) {
+  //     return;
+  //   }
+  //   // Subscribe to sensors
+  //   Gyroscope.setUpdateInterval(20); // 5ms per sample
+  //   Accelerometer.setUpdateInterval(20);
+  //
+  //   const gyroSub = Gyroscope.addListener((data) => {
+  //     gyroDataRef.current = data;
+  //   });
+  //   const accelSub = Accelerometer.addListener((data) => {
+  //     //TODO: freeze when overload
+  //     if (!commonStore.isLogging || (!data && !gyroDataRef.current)) return;
+  //
+  //     const sensorData = getSensorData(data, gyroDataRef.current);
+  //     currentSensorDataRef.current = sensorData;
+  //     const { gyroMag, accelMag, timestamp } = sensorData;
+  //
+  //     const willRecordAnomaly = commonStore.isAndCondition
+  //       ? gyroMag > commonStore.gyroThreshold &&
+  //         accelMag > commonStore.accelThreshold
+  //       : gyroMag > commonStore.gyroThreshold ||
+  //         accelMag > commonStore.accelThreshold;
+  //
+  //     if (willRecordAnomaly) {
+  //       recordAnomaly(timestamp);
+  //     }
+  //
+  //     commonStore.setBufferData(sensorData);
+  //   });
+  //
+  //   return () => {
+  //     gyroSub.remove();
+  //     accelSub.remove();
+  //   };
+  // }, [commonStore.isLogging]);
 
   const getMagnitudeData = (
     data: GyroscopeMeasurement | AccelerometerMeasurement | null,

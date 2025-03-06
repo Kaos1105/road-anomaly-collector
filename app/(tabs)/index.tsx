@@ -21,7 +21,7 @@ const HomeScreen = () => {
       setAccelData(currentSensorDataRef.current?.accelMag ?? 0);
       setGyroData(currentSensorDataRef.current?.gyroMag ?? 0);
       setButtonEnabled(extractedAnomalyRef.current.length > 0);
-    }, 500); // Update UI every second
+    }, 200); // Update UI every second
 
     return () => {
       clearInterval(intervalId);
