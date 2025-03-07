@@ -34,7 +34,6 @@ const saveCSV = async (
       )
       .join("\n");
     const csvContent = header + rows;
-    console.log(csvContent);
     await FileSystem.writeAsStringAsync(filePath, csvContent, {
       encoding: FileSystem.EncodingType.UTF8,
     });
