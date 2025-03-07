@@ -19,33 +19,22 @@ const saveCSV = async (
 ) => {
   try {
     const filePath = `${FileSystem.documentDirectory}${anomalyTime}_${anomalyType}_anomaly.csv`;
-
+    console.log(data);
     const header =
-      [
-        "timestamp",
-        "recordDateTime",
-        "latitude",
-        "longitude",
-        "gyroMag",
-        "accelMag",
-        "markAnomaly",
-      ].join(",") + "\n";
+      ["timestamp", "recordDateTime", "gyroMag", "accelMag"].join(",") + "\n";
 
     const rows = data
       .map((item) =>
         [
           item?.timestamp ?? "",
           item?.recordDateTime ?? "",
-          item?.latitude ?? "",
-          item?.longitude ?? "",
           item?.gyroMag ?? "",
           item?.accelMag ?? "",
-          item?.markAnomaly ?? "",
         ].join(","),
       )
       .join("\n");
-
     const csvContent = header + rows;
+    console.log(csvContent);
     await FileSystem.writeAsStringAsync(filePath, csvContent, {
       encoding: FileSystem.EncodingType.UTF8,
     });
@@ -72,7 +61,13 @@ export function useAnomalyCollect() {
   ): SensorData => {
     const now = new Date();
     const timestamp = now.getTime();
-    const readableTime = now.toLocaleString("en-GB", { timeZone: "UTC" }); // Convert to human-readable format
+    const date = now.toLocaleDateString("en-GB", { timeZone: "UTC" });
+    const time = now.toLocaleTimeString("en-GB", {
+      timeZone: "UTC",
+      hour12: false,
+    });
+
+    const readableTime = `${date} ${time}`;
     // const loc = await getLocation();
     // Store data in the circular buffer
     return {
@@ -112,9 +107,6 @@ export function useAnomalyCollect() {
 
       // console.log(willRecordAnomaly);
       if (willRecordAnomaly) {
-        console.log(true);
-        console.log("gyroMag", gyroMag);
-        console.log("accelMag", accelMag);
         recordAnomaly(timestamp);
       }
 
