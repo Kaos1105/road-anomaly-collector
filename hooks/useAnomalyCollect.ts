@@ -19,7 +19,6 @@ const saveCSV = async (
 ) => {
   try {
     const filePath = `${FileSystem.documentDirectory}${anomalyTime}_${anomalyType}_anomaly.csv`;
-    console.log(data);
     const header =
       ["timestamp", "recordDateTime", "gyroMag", "accelMag"].join(",") + "\n";
 
