@@ -24,53 +24,61 @@ const AnomalyBtnGroup = ({
           disabled={!isBtnEnabled}
           title={""}
           onPress={async () => {
-            await handlePress("NOR");
+            await handlePress("S-BUMP");
           }}
           style={{ ...styles.anomalyButton, backgroundColor: "#93bf9d" }}
         >
-          <ThemedText style={styles.anomalyText}>Mark as Normal</ThemedText>
+          <ThemedText style={styles.anomalyText}>Giảm Tốc NHỎ</ThemedText>
         </Button>
         <Button
           disabled={!isBtnEnabled}
           title={""}
           onPress={async () => {
-            await handlePress("MANHOLE");
+            await handlePress("L-BUMP");
           }}
-          style={{ ...styles.anomalyButton, backgroundColor: "#3b4f7a" }}
+          style={{ ...styles.anomalyButton, backgroundColor: "#5b8f67" }}
         >
-          <ThemedText style={styles.anomalyText}>Mark as Manhole</ThemedText>
+          <ThemedText style={styles.anomalyText}>Giảm Tốc LỚN</ThemedText>
         </Button>
         <Button
           disabled={!isBtnEnabled}
           title={""}
           onPress={async () => {
-            await handlePress("BUMP");
+            await handlePress("S-MANHOLE");
           }}
           style={{ ...styles.anomalyButton, backgroundColor: "#c4c47e" }}
         >
-          <ThemedText style={styles.anomalyText}>
-            Mark as Speed Bumps
-          </ThemedText>
+          <ThemedText style={styles.anomalyText}>Hố Ga NHỎ</ThemedText>
         </Button>
         <Button
           disabled={!isBtnEnabled}
           title={""}
           onPress={async () => {
-            await handlePress("UNEVEN");
+            await handlePress("L-MANHOLE");
           }}
           style={{ ...styles.anomalyButton, backgroundColor: "#cca164" }}
         >
-          <ThemedText style={styles.anomalyText}>Mark as Uneven</ThemedText>
+          <ThemedText style={styles.anomalyText}>Hố Ga LỚN</ThemedText>
         </Button>
         <Button
           disabled={!isBtnEnabled}
           title={""}
           onPress={async () => {
-            await handlePress("POTHOLE");
+            await handlePress("S-UNEVEN");
           }}
-          style={{ ...styles.anomalyButton, backgroundColor: "#e36459" }}
+          style={{ ...styles.anomalyButton, backgroundColor: "#bd6860" }}
         >
-          <ThemedText style={styles.anomalyText}>Mark as Potholes</ThemedText>
+          <ThemedText style={styles.anomalyText}>Gồ Ghề NHỎ</ThemedText>
+        </Button>
+        <Button
+          disabled={!isBtnEnabled}
+          title={""}
+          onPress={async () => {
+            await handlePress("L-UNEVEN");
+          }}
+          style={{ ...styles.anomalyButton, backgroundColor: "#eb766c" }}
+        >
+          <ThemedText style={styles.anomalyText}>Gồ Ghề LỚN</ThemedText>
         </Button>
       </ThemedView>
     </>

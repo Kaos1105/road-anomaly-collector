@@ -11,7 +11,13 @@ import {
   SensorTypes,
 } from "react-native-sensors";
 
-export type AnomalyType = "NOR" | "BUMP" | "MANHOLE" | "UNEVEN" | "POTHOLE";
+export type AnomalyType =
+  | "S-MANHOLE"
+  | "L-MANHOLE"
+  | "S-BUMP"
+  | "L-BUMP"
+  | "S-UNEVEN"
+  | "L-UNEVEN";
 const saveCSV = async (
   data: Array<SensorData | null>,
   anomalyTime: number,
