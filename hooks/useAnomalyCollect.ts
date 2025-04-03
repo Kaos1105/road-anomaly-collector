@@ -123,44 +123,6 @@ export function useAnomalyCollect() {
     };
   }, [commonStore.isLogging]);
 
-  // useEffect(() => {
-  //   if (!commonStore.isLogging) {
-  //     return;
-  //   }
-  //   // Subscribe to sensors
-  //   Gyroscope.setUpdateInterval(20); // 5ms per sample
-  //   Accelerometer.setUpdateInterval(20);
-  //
-  //   const gyroSub = Gyroscope.addListener((data) => {
-  //     gyroDataRef.current = data;
-  //   });
-  //   const accelSub = Accelerometer.addListener((data) => {
-  //     //TODO: freeze when overload
-  //     if (!commonStore.isLogging || (!data && !gyroDataRef.current)) return;
-  //
-  //     const sensorData = getSensorData(data, gyroDataRef.current);
-  //     currentSensorDataRef.current = sensorData;
-  //     const { gyroMag, accelMag, timestamp } = sensorData;
-  //
-  //     const willRecordAnomaly = commonStore.isAndCondition
-  //       ? gyroMag > commonStore.gyroThreshold &&
-  //         accelMag > commonStore.accelThreshold
-  //       : gyroMag > commonStore.gyroThreshold ||
-  //         accelMag > commonStore.accelThreshold;
-  //
-  //     if (willRecordAnomaly) {
-  //       recordAnomaly(timestamp);
-  //     }
-  //
-  //     commonStore.setBufferData(sensorData);
-  //   });
-  //
-  //   return () => {
-  //     gyroSub.remove();
-  //     accelSub.remove();
-  //   };
-  // }, [commonStore.isLogging]);
-
   const getMagnitudeData = (
     data: GyroscopeMeasurement | AccelerometerMeasurement | null,
   ) => {

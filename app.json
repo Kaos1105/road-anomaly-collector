@@ -36,6 +36,18 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      "onnxruntime-react-native",
+      "expo-asset",
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./assets/models/label_encoder_classes.txt",
+            "./assets/models/xgb_model.onnx",
+            "./assets/models/scaler_params.txt"
+          ]
+        }
       ]
     ],
     "experiments": {
