@@ -21,7 +21,7 @@ export function useInference() {
   const loadModel = async () => {
     try {
       const modelAsset = Asset.fromModule(
-        require("../assets/models/xgb_binary_model.onnx"),
+        require("../assets/models/xgb_model.onnx"),
       );
       await modelAsset.downloadAsync();
       const modelUri = modelAsset.localUri || modelAsset.uri;
@@ -30,7 +30,7 @@ export function useInference() {
 
       // Load scaler parameters
       const scalerAsset = Asset.fromModule(
-        require("../assets/models/binary_scaler_params.txt"),
+        require("../assets/models/scaler_params.txt"),
       );
       await scalerAsset.downloadAsync();
       const scalerUri = scalerAsset.localUri || scalerAsset.uri;
@@ -39,7 +39,7 @@ export function useInference() {
 
       // Load label encoder classes
       const encoderAsset = Asset.fromModule(
-        require("../assets/models/binary_label_encoder_classes.txt"),
+        require("../assets/models/label_encoder_classes.txt"),
       );
       await encoderAsset.downloadAsync();
       const encoderUri = encoderAsset.localUri || encoderAsset.uri;
@@ -61,11 +61,9 @@ export function useInference() {
 
   useEffect(() => {
     (async () => {
-      if (commonStore.isLogging && !session) {
-        await loadModel();
-      }
+      await loadModel();
     })();
-  }, [commonStore.isLogging]);
+  }, []);
 
   const makePrediction = async (data: Array<SensorData>) => {
     if (!session || !scalerParams || !labelEncoderClasses) {
