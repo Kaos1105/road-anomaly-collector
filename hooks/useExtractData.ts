@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import { SensorData } from "@/types/common/sensor";
 import { useCommonStore } from "@/stores/commonStore";
+import { useInferenceStore } from "@/stores/inferenceStore";
+import { useInference } from "@/hooks/useInference";
 
 type ExtractedData = {
   extractedData: (SensorData | null)[];
@@ -9,6 +11,8 @@ type ExtractedData = {
 
 export function useExtractData() {
   const commonStore = useCommonStore();
+  const inferenceStore = useInferenceStore();
+  const { makePrediction } = useInference();
   const anomalyQueueRef = useRef<number[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const extractedAnomalyRef = useRef<ExtractedData[]>([]);
@@ -20,7 +24,19 @@ export function useExtractData() {
     // Clear the queue after processing
     anomalyQueueRef.current = [];
 
-    extractAnomaly(anomalyTime);
+    inferAnomaly(anomalyTime).then();
+  };
+
+  const inferAnomaly = async (anomalyTime: number) => {
+    // Extract data based on this timestamp
+    const extractedData = commonStore.extractAnomaly(anomalyTime);
+    if (extractedData.length > 0) {
+      const label = await makePrediction(extractedData.filter((x) => !!x));
+      inferenceStore.setInferenceLabel(label ?? "");
+    }
+    setTimeout(() => {
+      inferenceStore.setInferenceLabel("");
+    }, 2000);
   };
 
   const extractAnomaly = (anomalyTime: number) => {

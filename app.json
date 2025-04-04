@@ -43,9 +43,9 @@
         "expo-asset",
         {
           "assets": [
-            "./assets/models/label_encoder_classes.txt",
-            "./assets/models/xgb_model.onnx",
-            "./assets/models/scaler_params.txt"
+            "./assets/models/binary_label_encoder_classes.txt",
+            "./assets/models/xgb_binary_model.onnx",
+            "./assets/models/binary_scaler_params.txt"
           ]
         }
       ]

@@ -1,26 +1,27 @@
 import { SensorData } from "@/types/common/sensor";
 import { scaleLinear } from "d3-scale";
-import Papa from "papaparse";
 import * as FileSystem from "expo-file-system";
-import { readAsStringAsync } from "expo-file-system";
 import * as math from "mathjs";
 import * as ss from "simple-statistics";
 import { useEffect, useState } from "react";
 import { Asset } from "expo-asset";
 import { InferenceSession, Tensor } from "onnxruntime-react-native";
+import { useCommonStore } from "@/stores/commonStore";
 
-export function useExtractData() {
+export function useInference() {
   const [session, setSession] = useState<InferenceSession>();
   const [scalerParams, setScalerParams] = useState<{
     mean: number[];
     scale: [];
   } | null>();
+  const commonStore = useCommonStore();
+
   const [labelEncoderClasses, setLabelEncoderClasses] = useState<string[]>([]);
 
   const loadModel = async () => {
     try {
       const modelAsset = Asset.fromModule(
-        require("../assets/models/xgb_model.onnx"),
+        require("../assets/models/xgb_binary_model.onnx"),
       );
       await modelAsset.downloadAsync();
       const modelUri = modelAsset.localUri || modelAsset.uri;
@@ -29,7 +30,7 @@ export function useExtractData() {
 
       // Load scaler parameters
       const scalerAsset = Asset.fromModule(
-        require("../assets/models/scaler_params.txt"),
+        require("../assets/models/binary_scaler_params.txt"),
       );
       await scalerAsset.downloadAsync();
       const scalerUri = scalerAsset.localUri || scalerAsset.uri;
@@ -38,7 +39,7 @@ export function useExtractData() {
 
       // Load label encoder classes
       const encoderAsset = Asset.fromModule(
-        require("../assets/models/label_encoder_classes.txt"),
+        require("../assets/models/binary_label_encoder_classes.txt"),
       );
       await encoderAsset.downloadAsync();
       const encoderUri = encoderAsset.localUri || encoderAsset.uri;
@@ -60,18 +61,20 @@ export function useExtractData() {
 
   useEffect(() => {
     (async () => {
-      await loadModel();
+      if (commonStore.isLogging && !session) {
+        await loadModel();
+      }
     })();
-  }, []);
+  }, [commonStore.isLogging]);
 
-  const makePrediction = async (filePath: string) => {
+  const makePrediction = async (data: Array<SensorData>) => {
     if (!session || !scalerParams || !labelEncoderClasses) {
       return null;
     }
 
     try {
       // Parse input features
-      const features = await extractDataFeature(filePath);
+      const features = await extractDataFeature(data);
 
       // Scale features
       const scaledFeatures = scaleFeatures(
@@ -204,24 +207,24 @@ export function useExtractData() {
   };
 
   const preprocessSensorData = async (
-    // data: Array<SensorData>,
-    filePath: string,
+    data: Array<SensorData>,
+    // filePath: string,
     targetFs = 50,
     duration = 2.0,
   ) => {
     // Read CSV file
-    const fileContent = await readAsStringAsync(filePath);
-    const { data } = Papa.parse(fileContent, {
-      header: true,
-      skipEmptyLines: true,
-    }) as { data: SensorData[] };
-
-    const requiredCols = ["timestamp", "gyroMag", "accelMag"];
-    for (const col of requiredCols) {
-      if (!data[0]?.hasOwnProperty(col)) {
-        throw new Error(`CSV missing required column: ${col}`);
-      }
-    }
+    // const fileContent = await readAsStringAsync(filePath);
+    // const { data } = Papa.parse(fileContent, {
+    //   header: true,
+    //   skipEmptyLines: true,
+    // }) as { data: SensorData[] };
+    //
+    // const requiredCols = ["timestamp", "gyroMag", "accelMag"];
+    // for (const col of requiredCols) {
+    //   if (!data[0]?.hasOwnProperty(col)) {
+    //     throw new Error(`CSV missing required column: ${col}`);
+    //   }
+    // }
 
     if (data.length === 0) throw new Error("Data array is empty");
 
@@ -282,8 +285,8 @@ export function useExtractData() {
     return { newGyro, newAccel, newTime };
   };
 
-  const extractDataFeature = async (filePath: string) => {
-    const { newGyro, newAccel, newTime } = await preprocessSensorData(filePath);
+  const extractDataFeature = async (data: Array<SensorData>) => {
+    const { newGyro, newAccel, newTime } = await preprocessSensorData(data);
     return extractAllFeatures(newGyro, newAccel, newTime);
   };
 

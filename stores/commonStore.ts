@@ -49,7 +49,7 @@ export const useCommonStore = create<CommonStore>((set, get) => ({
       .sort((x, y) => (x?.timestamp ?? 0) - (y?.timestamp ?? 0))
       .filter(
         (entry) =>
-          entry &&
+          !!entry &&
           entry.timestamp >= anomalyTime - 1000 &&
           entry.timestamp <= anomalyTime + 1000,
       );

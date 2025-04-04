@@ -18,7 +18,7 @@ export type AnomalyType =
   | "L-BUMP"
   | "S-UNEVEN"
   | "L-UNEVEN";
-const saveCSV = async (
+export const saveCSV = async (
   data: Array<SensorData | null>,
   anomalyTime: number,
   anomalyType: AnomalyType,
@@ -42,8 +42,8 @@ const saveCSV = async (
     await FileSystem.writeAsStringAsync(filePath, csvContent, {
       encoding: FileSystem.EncodingType.UTF8,
     });
-
     console.log(`CSV file saved successfully at: ${filePath}`);
+    return filePath;
   } catch (error) {
     console.error("Error saving data to CSV:", error);
   }
@@ -137,7 +137,7 @@ export function useAnomalyCollect() {
   };
 
   const saveExtracted = async (anomalyTime: AnomalyType) => {
-    let saveTasks: Promise<void>[] = [];
+    let saveTasks: Promise<string | undefined>[] = [];
     extractedAnomalyRef.current.forEach((val) => {
       saveTasks.push(saveCSV(val.extractedData, val.timestamp, anomalyTime));
     });

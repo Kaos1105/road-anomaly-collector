@@ -8,7 +8,7 @@ import { Button } from "@/components/button/Button";
 import { useCommonStore } from "@/stores/commonStore";
 import * as FileSystem from "expo-file-system";
 import Toast from "react-native-toast-message";
-import { useExtractData } from "@/hooks/useInference";
+import { useInference } from "@/hooks/useInference";
 
 const AnomalySettingsScreen = () => {
   const commonStore = useCommonStore();
@@ -19,7 +19,6 @@ const AnomalySettingsScreen = () => {
   const [isAndCondition, setIsAndCondition] = useState(
     commonStore.isAndCondition ? "AND" : "OR",
   );
-  const { makePrediction } = useExtractData();
 
   const handleSave = () => {
     commonStore.setIsAndCondition(isAndCondition === "AND");
@@ -42,8 +41,7 @@ const AnomalySettingsScreen = () => {
         console.log("🚫 No CSV files found to share.");
         return;
       }
-      // const filePath = `${FileSystem.documentDirectory}${csvFiles[0]}`;
-      // const result = await makePrediction(filePath);
+
       for (const file of csvFiles) {
         const filePath = `${FileSystem.documentDirectory}${file}`;
 
