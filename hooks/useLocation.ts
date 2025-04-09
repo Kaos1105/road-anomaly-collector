@@ -3,10 +3,6 @@ import * as Location from "expo-location";
 import Toast from "react-native-toast-message";
 
 export function useLocation() {
-  // const [location, setLocation] = useState<Location.LocationObject | null>(
-  //   null,
-  // );
-
   useEffect(() => {
     // Request location permissions
     (async () => {

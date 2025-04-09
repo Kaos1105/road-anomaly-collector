@@ -3,6 +3,8 @@ import { SensorData } from "@/types/common/sensor";
 import { useCommonStore } from "@/stores/commonStore";
 import { useInferenceStore } from "@/stores/inferenceStore";
 import { useInference } from "@/hooks/useInference";
+import { AnomalyType, saveCSV } from "@/hooks/useAnomalyCollect";
+import { useLocation } from "@/hooks/useLocation";
 
 type ExtractedData = {
   extractedData: (SensorData | null)[];
@@ -13,6 +15,7 @@ export function useExtractData() {
   const commonStore = useCommonStore();
   const inferenceStore = useInferenceStore();
   const { makePrediction } = useInference();
+  const { getLocation } = useLocation();
   const anomalyQueueRef = useRef<number[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const extractedAnomalyRef = useRef<ExtractedData[]>([]);
@@ -27,31 +30,35 @@ export function useExtractData() {
     inferAnomaly(anomalyTime).then();
   };
 
+  const mapInferenceData = async (extractedData: (SensorData | null)[]) => {
+    const loc = await getLocation();
+    return extractedData
+      .filter((x) => !!x)
+      .map((x) => {
+        return {
+          ...x,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+        };
+      });
+  };
+
   const inferAnomaly = async (anomalyTime: number) => {
     // Extract data based on this timestamp
     const extractedData = commonStore.extractAnomaly(anomalyTime);
-    if (extractedData.length > 0) {
-      const label = await makePrediction(extractedData.filter((x) => !!x));
+    const mappedInference = await mapInferenceData(extractedData);
+    if (mappedInference.length > 0) {
+      const label = await makePrediction(mappedInference);
       inferenceStore.setInferenceLabel(label ?? "");
+      await saveCSV(
+        mappedInference,
+        anomalyTime,
+        (label as AnomalyType) ?? "UNKNOWN",
+      );
     }
     setTimeout(() => {
       inferenceStore.setInferenceLabel("");
     }, 2000);
-  };
-
-  const extractAnomaly = (anomalyTime: number) => {
-    // Extract data based on this timestamp
-    const extractedData = commonStore.extractAnomaly(anomalyTime);
-    console.log("Extracted Data for Anomaly:", extractedData.length);
-    if (extractedData.length > 0) {
-      extractedAnomalyRef.current.push({
-        extractedData,
-        timestamp: anomalyTime,
-      });
-    }
-    setTimeout(() => {
-      extractedAnomalyRef.current = [];
-    }, 4000);
   };
 
   const addAnomalyTimestamp = (timestamp: number) => {

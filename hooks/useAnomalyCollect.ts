@@ -12,6 +12,7 @@ import {
 } from "react-native-sensors";
 
 export type AnomalyType =
+  | "UNKNOWN"
   | "S-MANHOLE"
   | "L-MANHOLE"
   | "S-BUMP"
@@ -51,8 +52,6 @@ export const saveCSV = async (
 
 export function useAnomalyCollect() {
   const commonStore = useCommonStore();
-  // const { playBeep } = useSound();
-  // const { getLocation } = useLocation();
   const { addAnomalyTimestamp, extractedAnomalyRef } = useExtractData();
 
   const gyroDataRef = useRef<GyroscopeMeasurement | null>(null);
@@ -72,7 +71,6 @@ export function useAnomalyCollect() {
     });
 
     const readableTime = `${date} ${time}`;
-    // const loc = await getLocation();
     // Store data in the circular buffer
     return {
       timestamp: timestamp,
@@ -132,7 +130,6 @@ export function useAnomalyCollect() {
 
   const recordAnomaly = (anomalyTimestamp: number) => {
     // playBeep(); // Play sound when anomaly is detected
-    // Push the anomaly timestamp to the queue
     addAnomalyTimestamp(anomalyTimestamp);
   };
 

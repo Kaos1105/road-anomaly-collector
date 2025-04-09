@@ -6,7 +6,6 @@ import * as ss from "simple-statistics";
 import { useEffect, useState } from "react";
 import { Asset } from "expo-asset";
 import { InferenceSession, Tensor } from "onnxruntime-react-native";
-import { useCommonStore } from "@/stores/commonStore";
 
 export function useInference() {
   const [session, setSession] = useState<InferenceSession>();
@@ -14,7 +13,6 @@ export function useInference() {
     mean: number[];
     scale: [];
   } | null>();
-  const commonStore = useCommonStore();
 
   const [labelEncoderClasses, setLabelEncoderClasses] = useState<string[]>([]);
 
@@ -210,20 +208,6 @@ export function useInference() {
     targetFs = 50,
     duration = 2.0,
   ) => {
-    // Read CSV file
-    // const fileContent = await readAsStringAsync(filePath);
-    // const { data } = Papa.parse(fileContent, {
-    //   header: true,
-    //   skipEmptyLines: true,
-    // }) as { data: SensorData[] };
-    //
-    // const requiredCols = ["timestamp", "gyroMag", "accelMag"];
-    // for (const col of requiredCols) {
-    //   if (!data[0]?.hasOwnProperty(col)) {
-    //     throw new Error(`CSV missing required column: ${col}`);
-    //   }
-    // }
-
     if (data.length === 0) throw new Error("Data array is empty");
 
     // Convert timestamps to relative time
