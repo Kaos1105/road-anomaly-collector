@@ -3,8 +3,8 @@ import { SensorData } from "@/types/common/sensor";
 import { useCommonStore } from "@/stores/commonStore";
 import { useInferenceStore } from "@/stores/inferenceStore";
 import { useInference } from "@/hooks/useInference";
-import { AnomalyType, saveCSV } from "@/hooks/useAnomalyCollect";
 import { useLocation } from "@/hooks/useLocation";
+import { AnomalyType, saveCSV } from "@/helper/commonHelper";
 
 type ExtractedData = {
   extractedData: (SensorData | null)[];
@@ -15,7 +15,7 @@ export function useExtractData() {
   const commonStore = useCommonStore();
   const inferenceStore = useInferenceStore();
   const { makePrediction } = useInference();
-  const { getLocation } = useLocation();
+  // const { getLocation } = useLocation();
   const anomalyQueueRef = useRef<number[]>([]);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const extractedAnomalyRef = useRef<ExtractedData[]>([]);
@@ -31,14 +31,14 @@ export function useExtractData() {
   };
 
   const mapInferenceData = async (extractedData: (SensorData | null)[]) => {
-    const loc = await getLocation();
+    // const loc = await getLocation();
     return extractedData
       .filter((x) => !!x)
       .map((x) => {
         return {
           ...x,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
+          // latitude: loc.latitude,
+          // longitude: loc.longitude,
         };
       });
   };
